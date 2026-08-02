@@ -1,42 +1,11 @@
 import { Component, DestroyRef, OnInit, inject, signal } from '@angular/core';
 import { RouterModule } from '@angular/router';
-import {
-  ContentClient,
-  PageContent,
-  StaticContentClient,
-  StrapiContentClient,
-} from '@tn4consulting/shared-content-client';
+import { PageContent } from '@tn4consulting/shared-content-client';
 import { TranslocoPipe, TranslocoService } from '@tn4consulting/shared-i18n';
 import { CLAIM_DASHBOARD, getStoredSession, hasClaim, onSessionChange } from '@tn4consulting/shared-auth';
 import { BENEFIT_OVERVIEW_API_CLIENT, BenefitOverview } from 'dashboard-data-access';
 import { DashboardFeaturePaymentHistory } from 'dashboard-feature-payment-history';
-import { runtimeConfig } from '../runtime-config';
-
-const OVERVIEW_CONTENT_KEY = 'dashboard.overview.intro';
-
-// Baked fallback for the Firebase-hosted build (no live CMS there) -- kept
-// in sync with the seed data in tools/cms/strapi/src/index.ts by hand for
-// now; a build step to export this automatically is a natural follow-up.
-const STATIC_CONTENT: Record<string, Record<'en' | 'fr', PageContent>> = {
-  [OVERVIEW_CONTENT_KEY]: {
-    en: {
-      key: OVERVIEW_CONTENT_KEY,
-      title: 'Welcome to your account',
-      body: 'Here is an overview of your benefits, payments, and tasks.',
-    },
-    fr: {
-      key: OVERVIEW_CONTENT_KEY,
-      title: 'Bienvenue dans votre compte',
-      body: 'Voici un aperçu de vos prestations, paiements et tâches.',
-    },
-  },
-};
-
-function createContentClient(): ContentClient {
-  return runtimeConfig.strapiBaseUrl
-    ? new StrapiContentClient(runtimeConfig.strapiBaseUrl)
-    : new StaticContentClient(STATIC_CONTENT);
-}
+import { CONTENT_CLIENT, OVERVIEW_CONTENT_KEY } from './content-client.token';
 
 @Component({
   imports: [RouterModule, TranslocoPipe, DashboardFeaturePaymentHistory],
@@ -54,7 +23,7 @@ export class App implements OnInit {
   protected readonly hasAccess = signal(hasClaim(getStoredSession(), CLAIM_DASHBOARD));
   protected readonly benefitOverview = signal<BenefitOverview | null>(null);
 
-  private readonly contentClient = createContentClient();
+  private readonly contentClient = inject(CONTENT_CLIENT);
   private readonly transloco = inject(TranslocoService);
   private readonly benefitOverviewApiClient = inject(BENEFIT_OVERVIEW_API_CLIENT);
 

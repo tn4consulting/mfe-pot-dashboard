@@ -1,5 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
+import { StrapiContentClient } from '@tn4consulting/shared-content-client';
 import { TranslocoTestingModule } from '@tn4consulting/shared-i18n';
 import { clearSession, createMockSession, storeSession } from '@tn4consulting/shared-auth';
 import {
@@ -10,6 +11,7 @@ import {
   PaymentHistoryApiClient,
 } from 'dashboard-data-access';
 import { App } from './app';
+import { CONTENT_CLIENT } from './content-client.token';
 
 const emptyOverview: BenefitOverview = {
   eligibleBenefits: { status: 'ok', data: [] },
@@ -59,6 +61,9 @@ describe('App', () => {
         provideRouter([]),
         { provide: BENEFIT_OVERVIEW_API_CLIENT, useValue: benefitOverviewApiClient },
         { provide: PAYMENT_HISTORY_API_CLIENT, useValue: paymentHistoryApiClient },
+        // Normally supplied by REMOTE_PROVIDERS (built from this app's own
+        // fetched strapiBaseUrl) -- see content-client.token.ts.
+        { provide: CONTENT_CLIENT, useValue: new StrapiContentClient('http://localhost:1337') },
       ],
     }).compileComponents();
   });
