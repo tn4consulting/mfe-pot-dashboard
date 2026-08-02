@@ -1,0 +1,49 @@
+@if (hasAccess()) {
+  <section>
+    <h1>{{ 'chrome.heading' | transloco }}</h1>
+    @if (overview(); as content) {
+      <h2>{{ content.title }}</h2>
+      <p>{{ content.body }}</p>
+    } @else if (contentLoadError()) {
+      <p role="alert">Page content is temporarily unavailable.</p>
+    }
+    <p>{{ 'chrome.servedFrom' | transloco }}</p>
+  </section>
+
+  @if (benefitOverview(); as data) {
+    <section aria-labelledby="active-applications-heading">
+      <h2 id="active-applications-heading">Active applications</h2>
+      @if (data.activeApplications.status === 'ok') {
+        @if (data.activeApplications.data.length === 0) {
+          <p>No active applications.</p>
+        } @else {
+          <ul>
+            @for (application of data.activeApplications.data; track application.id) {
+              <li>{{ application.summary }} — {{ application.status }}</li>
+            }
+          </ul>
+        }
+      } @else {
+        <p role="alert">Active applications are temporarily unavailable.</p>
+      }
+    </section>
+
+    <section aria-labelledby="tasks-heading">
+      <h2 id="tasks-heading">My tasks</h2>
+      @if (data.tasks.status === 'ok') {
+        <ul>
+          @for (task of data.tasks.data; track task) {
+            <li>{{ task }}</li>
+          }
+        </ul>
+      } @else {
+        <p role="alert">Tasks are temporarily unavailable.</p>
+      }
+    </section>
+  }
+
+  <lib-dashboard-feature-payment-history></lib-dashboard-feature-payment-history>
+} @else {
+  <p role="alert">{{ 'auth.signInRequired' | transloco }}</p>
+}
+<router-outlet></router-outlet>

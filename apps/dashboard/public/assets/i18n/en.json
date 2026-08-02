@@ -1,0 +1,9 @@
+{
+  "chrome": {
+    "heading": "MSCA-D — Dashboard (federated remote)",
+    "servedFrom": "This component is served from the dashboard remote and rendered inside the shell at runtime."
+  },
+  "auth": {
+    "signInRequired": "You need to sign in to view your dashboard."
+  }
+}

@@ -1,0 +1,8 @@
+<section class="payment-history-widget">
+  <h2>Payment history</h2>
+  @if (loadError()) {
+    <p role="alert">Payment history is temporarily unavailable.</p>
+  } @else {
+    <ul>@for (payment of payments(); track payment.id) {<li>{{ payment.date }} — {{ payment.benefit }} — ${{ payment.amount.toFixed(2) }}</li>}</ul>
+  }
+</section>

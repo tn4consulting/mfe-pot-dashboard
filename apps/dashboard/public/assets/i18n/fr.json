@@ -1,0 +1,9 @@
+{
+  "chrome": {
+    "heading": "MSCA-D — Tableau de bord (module distant)",
+    "servedFrom": "Ce composant est fourni par le module distant dashboard et affiché dans l'application principale au moment de l'exécution."
+  },
+  "auth": {
+    "signInRequired": "Vous devez ouvrir une session pour consulter votre tableau de bord."
+  }
+}

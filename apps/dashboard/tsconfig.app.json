@@ -1,0 +1,29 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "outDir": "../../dist/out-tsc",
+    "types": []
+  },
+  "include": [
+    "src/**/*.ts",
+    "../../libs/feature-payment-history/src/**/*.ts",
+    "../../libs/data-access/src/index.ts",
+    "../../libs/feature-payment-history/src/index.ts"
+  ],
+  "exclude": [
+    "src/**/*.spec.ts",
+    "src/**/*.test.ts",
+    "jest.config.ts",
+    "jest.config.cts",
+    "src/test-setup.ts",
+    "../../libs/feature-payment-history/src/**/*.spec.ts"
+  ],
+  "references": [
+    {
+      "path": "../../libs/feature-payment-history"
+    },
+    {
+      "path": "../../libs/data-access"
+    }
+  ]
+}
