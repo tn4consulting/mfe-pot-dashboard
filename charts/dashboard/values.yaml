@@ -9,6 +9,11 @@ frontend:
   servicePort: 80
   # benefitAggregationBffBaseUrl is same-origin (this app's own BFF, via
   # the /api Ingress path rule below) -- see CLAUDE.md's Hosting section.
+  # Empty, not "/api": HttpBenefitOverviewApiClient/HttpPaymentHistoryApiClient
+  # already append "/api/..." themselves (`${baseUrl}/api/overview`), so
+  # this value is just "this app's own origin" -- shared-runtime-config's
+  # fetchRuntimeConfig resolves "" to that origin. A literal "/api" here
+  # double-prefixes every request to /api/api/... and 404s.
   # strapiBaseUrl/clientProfileServiceBaseUrl point at services that stay
   # in the platform repo (Strapi CMS, client-profile-service) which don't
   # have their own charts built yet (see the platform repo's plan doc) --
@@ -17,7 +22,7 @@ frontend:
   # ContentClient/data-access layers are designed to degrade against, not
   # a regression introduced by this extraction.
   runtimeConfig:
-    benefitAggregationBffBaseUrl: "/api"
+    benefitAggregationBffBaseUrl: ""
     strapiBaseUrl: "http://strapi.default.svc.cluster.local:1337"
     clientProfileServiceBaseUrl: "http://client-profile-service.default.svc.cluster.local:3003"
 
