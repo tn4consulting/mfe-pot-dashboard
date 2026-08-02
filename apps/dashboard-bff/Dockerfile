@@ -37,7 +37,7 @@ COPY tools ./tools
 RUN --mount=type=secret,id=npm_token \
     --mount=type=cache,target=/root/.local/share/pnpm/store \
     NODE_AUTH_TOKEN="$(cat /run/secrets/npm_token)" pnpm install --frozen-lockfile --network-concurrency=4
-RUN pnpm exec nx build benefit-aggregation-bff --configuration=production
+RUN pnpm exec nx build dashboard-bff --configuration=production
 
 FROM node:22-alpine AS runtime
 WORKDIR /app
@@ -47,7 +47,7 @@ ENV NODE_ENV=production
 # 0.0.0.0, or the Pod's Service can never reach it despite the process
 # looking healthy from inside its own container.
 ENV HOST=0.0.0.0
-COPY --from=build /workspace/dist/apps/benefit-aggregation-bff ./
+COPY --from=build /workspace/dist/apps/dashboard-bff ./
 COPY --from=build /workspace/node_modules ./node_modules
 EXPOSE 3004
 CMD ["node", "main.js"]

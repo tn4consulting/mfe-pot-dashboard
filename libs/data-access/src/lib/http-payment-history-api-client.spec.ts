@@ -2,7 +2,7 @@ import { HttpPaymentHistoryApiClient } from './http-payment-history-api-client';
 
 describe('HttpPaymentHistoryApiClient', () => {
   const originalFetch = global.fetch;
-  const client = new HttpPaymentHistoryApiClient('http://localhost:3003');
+  const client = new HttpPaymentHistoryApiClient('http://localhost:3004');
 
   afterEach(() => {
     global.fetch = originalFetch;
@@ -17,11 +17,11 @@ describe('HttpPaymentHistoryApiClient', () => {
     const payments = await client.getPayments('mock-citizen-001');
     expect(payments).toHaveLength(1);
     expect(global.fetch).toHaveBeenCalledWith(
-      'http://localhost:3003/api/profile/mock-citizen-001/payments',
+      new URL('http://localhost:3004/api/payments?sub=mock-citizen-001'),
     );
   });
 
-  it('throws when client-profile-service fails', async () => {
+  it('throws when dashboard-bff fails', async () => {
     global.fetch = jest.fn().mockResolvedValue({ ok: false, status: 500 }) as unknown as typeof fetch;
     await expect(client.getPayments('mock-citizen-001')).rejects.toThrow('500');
   });

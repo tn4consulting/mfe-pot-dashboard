@@ -1,7 +1,7 @@
 apiVersion: v2
 name: dashboard
 description: >-
-  Deploys the dashboard frontend + benefit-aggregation-bff pair as one
+  Deploys the dashboard frontend + dashboard-bff pair as one
   Helm release, independent of every other mfe-pot app -- `helm upgrade
   --install dashboard ./charts/dashboard` touches only these two.
   Extracted into this repo per Phase 1 of the platform repo's

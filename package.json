@@ -4,7 +4,7 @@
   "license": "MIT",
   "scripts": {
     "build": "nx run-many -t build --all",
-    "lint": "nx run-many -t lint --all && nx run benefit-aggregation-bff:eslint:lint",
+    "lint": "nx run-many -t lint --all && nx run dashboard-bff:eslint:lint",
     "test": "nx run-many -t test --all",
     "deploy:local": "bash tools/deploy-local.sh"
   },

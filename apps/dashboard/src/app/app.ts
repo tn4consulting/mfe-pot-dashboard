@@ -45,7 +45,7 @@ export class App implements OnInit {
     const session = getStoredSession();
     if (session) {
       try {
-        // benefit-aggregation-bff's fan-out degrades one tile at a time (see
+        // dashboard-bff's fan-out degrades one tile at a time (see
         // CLAUDE.md's "Backends: BFF pattern" section) -- individual tiles
         // report their own `unavailable` status rather than this call
         // itself failing. It can still throw if the service is entirely

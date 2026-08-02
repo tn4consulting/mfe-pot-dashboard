@@ -7,30 +7,33 @@ frontend:
     pullPolicy: IfNotPresent
   containerPort: 80
   servicePort: 80
-  # benefitAggregationBffBaseUrl is same-origin (this app's own BFF, via
+  # dashboardBffBaseUrl is same-origin (this app's own BFF, via
   # the /api Ingress path rule below) -- see CLAUDE.md's Hosting section.
   # Empty, not "/api": HttpBenefitOverviewApiClient/HttpPaymentHistoryApiClient
   # already append "/api/..." themselves (`${baseUrl}/api/overview`), so
   # this value is just "this app's own origin" -- shared-runtime-config's
   # fetchRuntimeConfig resolves "" to that origin. A literal "/api" here
   # double-prefixes every request to /api/api/... and 404s.
-  # strapiBaseUrl/clientProfileServiceBaseUrl point at services that stay
-  # in the platform repo (Strapi CMS, client-profile-service) which don't
-  # have their own charts built yet (see the platform repo's plan doc) --
-  # left as plausible in-cluster Service DNS names; calls to them will
-  # fail to resolve until those charts exist, which dashboard's own
-  # ContentClient/data-access layers are designed to degrade against, not
-  # a regression introduced by this extraction.
+  # strapiBaseUrl now points at charts/strapi's real public Ingress
+  # hostname (mfe-pot-platform), not in-cluster Service DNS -- this call
+  # is browser-to-server (ContentClient fetches Strapi directly from the
+  # end user's browser, same as shell's federation-manifest fetch), so a
+  # cluster-internal name would never resolve there even once the chart
+  # existed. No clientProfileServiceBaseUrl here on purpose:
+  # client-profile-service is BFF-only (see backend.env below) --
+  # HttpPaymentHistoryApiClient now goes through dashboard-bff's
+  # /api/payments proxy instead of calling it directly from the browser,
+  # which is also the only URL for it that could ever resolve here (its
+  # real address is an in-cluster Service DNS name, not a public hostname).
   runtimeConfig:
-    benefitAggregationBffBaseUrl: ""
-    strapiBaseUrl: "http://strapi.default.svc.cluster.local:1337"
-    clientProfileServiceBaseUrl: "http://client-profile-service.default.svc.cluster.local:3003"
+    dashboardBffBaseUrl: ""
+    strapiBaseUrl: "http://cms.mfe-pot.local"
 
 backend:
-  name: benefit-aggregation-bff
+  name: dashboard-bff
   replicaCount: 1
   image:
-    repository: mfe-pot-benefit-aggregation-bff
+    repository: mfe-pot-dashboard-bff
     tag: latest
     pullPolicy: IfNotPresent
   containerPort: 3004
@@ -40,9 +43,11 @@ backend:
   # -- each already a Deployment+Service pair from its own extracted
   # repo's chart), not their public Ingress hostnames -- this is genuine
   # cluster-internal service-to-service traffic. CLIENT_PROFILE_SERVICE_URL
-  # has no deployed Service yet (see frontend.runtimeConfig comment above);
-  # that upstream call fails and degrades gracefully per overview.ts's
-  # existing partial-failure contract.
+  # has no deployed Service yet (see frontend.runtimeConfig comment above) --
+  # payments.ts's fetch to it fails until that chart exists, returning a 502
+  # from /api/payments (frontend shows the "temporarily unavailable" error
+  # state), and /api/overview's payments/correspondence tiles keep degrading
+  # gracefully per overview.ts's existing partial-failure contract.
   env:
     HOST: "0.0.0.0"
     PORT: "3004"

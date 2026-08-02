@@ -121,7 +121,7 @@ describe('App', () => {
     );
   });
 
-  it('renders active applications from the benefit-aggregation-bff overview', async () => {
+  it('renders active applications from the dashboard-bff overview', async () => {
     global.fetch = jest.fn().mockResolvedValue({
       ok: true,
       json: async () => ({ data: [] }),

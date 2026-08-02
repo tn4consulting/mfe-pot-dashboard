@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Builds dashboard's + benefit-aggregation-bff's images, spins up (or
+# Builds dashboard's + dashboard-bff's images, spins up (or
 # reuses) a local kind cluster with ingress-nginx, and helm-upgrades this
 # app's chart onto it -- the local equivalent of the kind-validation stage
 # in .github/workflows/ci.yml.
@@ -49,15 +49,15 @@ docker build \
   -t mfe-pot-dashboard:kind \
   -f apps/dashboard/Dockerfile .
 
-echo "==> Building benefit-aggregation-bff image..."
+echo "==> Building dashboard-bff image..."
 docker build \
   --secret id=npm_token,src="$token_file" \
-  -t mfe-pot-benefit-aggregation-bff:kind \
-  -f apps/benefit-aggregation-bff/Dockerfile .
+  -t mfe-pot-dashboard-bff:kind \
+  -f apps/dashboard-bff/Dockerfile .
 
 echo "==> Loading images into kind..."
 kind load docker-image mfe-pot-dashboard:kind --name "$CLUSTER_NAME"
-kind load docker-image mfe-pot-benefit-aggregation-bff:kind --name "$CLUSTER_NAME"
+kind load docker-image mfe-pot-dashboard-bff:kind --name "$CLUSTER_NAME"
 
 echo "==> Updating Helm chart dependencies..."
 helm dependency update charts/dashboard
