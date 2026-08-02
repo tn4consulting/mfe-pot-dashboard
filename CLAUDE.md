@@ -1,0 +1,29 @@
+# mfe-pot-dashboard
+
+## What this is
+
+The **MSCA-D** frontend for the mfe-pot Government of Canada MFE proof-of-technology: 360° cross-benefit overview (eligible benefits, active applications, "my tasks"), payment history, correspondence, and "tell us once" profile maintenance. Federated as a remote into `mfe-pot-shell`; also exposes a standalone payment-history widget embedded directly into `mfe-pot-employment-life-events` (the one proven cross-remote widget-composition case in this architecture).
+
+**This repo doesn't carry its own architecture doc.** Full rationale — bilingual/WCAG/GCDS requirements, the Native Federation setup, why apps are thin and libs hold the logic, the federation-sharing policy, security model, i18n mechanism, the BFF partial-failure pattern, hosting/Helm pattern, and every non-obvious gotcha behind the code in this repo — lives in **`../mfe-pot-platform/CLAUDE.md`**. Read it before making any architectural change here; this file only covers what's specific to this repo. See `../CLAUDE.md` (the `mfe-pot` meta repo) for the full 6-repo map.
+
+## What's in this repo
+
+- `apps/dashboard` — the frontend, federated on port `4201` in local dev.
+- `apps/benefit-aggregation-bff` — dashboard's dedicated BFF (port `3004`), which composes MSCA-D's cross-benefit overview by calling `job-bank-bff`, `employment-insurance-bff`, and `client-profile-service` over real HTTP (`src/config.ts`'s `JOB_BANK_BFF_URL`/`EMPLOYMENT_INSURANCE_BFF_URL`/`CLIENT_PROFILE_SERVICE_URL`) — never by importing another domain's in-memory state.
+- `libs/feature-payment-history` — the payment-history widget, exposed via federation as `./PaymentHistoryWidget` (`federation.config.mjs`) so `employment-life-events` can embed it directly. `libs/data-access` — dashboard's `BenefitAggregationApiClient`.
+- `charts/dashboard` — deploys the frontend+BFF pair as one Helm release, depending on both platform-repo library charts (`mfe-frontend-lib`, `mfe-backend-lib`).
+
+Depends on published packages from GitHub Packages: `@tn4consulting/shared-auth`, `shared-content-client`, `shared-federation-config`, `shared-i18n`, `shared-runtime-config` (pinned in `package.json`; keep in sync with `platform-versions.json` in `mfe-pot-platform`).
+
+## Repo-specific things worth knowing
+
+- **`benefit-aggregation-bff` is architecturally different from the other two extracted BFFs**: it's a fan-out aggregator, not a self-contained leaf service. `overview.ts`'s partial-failure contract (`UpstreamResult<T>` — `{status:'ok', data}` vs `{status:'unavailable'}`) means a slow/failed upstream degrades only its own tile, never the whole response — verified live on `kind` with job-bank/employment-insurance deployed and `client-profile-service` not yet deployed (that tile correctly showed `unavailable` while the others returned real data).
+- **In the Helm chart, `JOB_BANK_BFF_URL`/`EMPLOYMENT_INSURANCE_BFF_URL` point at sibling repos' in-cluster Kubernetes Service DNS** (`job-bank-bff.default.svc.cluster.local`, etc.) — genuine cross-Helm-release, cross-repo service-to-service traffic, not routed back out through Ingress. `benefitAggregationBffBaseUrl` on the frontend side is the opposite: `/api`, a same-origin Ingress path rule, since that call is browser-to-server.
+- **`strapiBaseUrl` and `clientProfileServiceBaseUrl` point at Services that don't have Helm charts yet** (both stay in `mfe-pot-platform`, which hasn't built them) — those upstream calls will fail to resolve in a real cluster today; that's expected until the platform repo's Strapi/`client-profile-service` charts exist, not a regression in this repo.
+- **`federation.config.mjs`'s `exposes` map has a third entry beyond the usual `./Component`**: `./PaymentHistoryWidget` (from `libs/feature-payment-history`) and `./RemoteProviders` (dashboard's own DI providers, which `employment-life-events` also loads alongside the widget so it runs in the right environment injector — see the platform repo's CLAUDE.md, "The cross-remote payment-history widget needed the same component+providers pairing"). If you ever move or rename this lib, this is the file that breaks first (`FsPath ... does not exist`), not `tsconfig.app.json`.
+- **Known functional gap** (tracked in `../TODO.md`, the root `mfe-pot` meta repo's cross-repo TODO — not a bug to "fix" here without asking): the payment-history widget still renders static English mock data — none of it wired to Transloco/locale-aware formatting yet.
+- No `.github/workflows/` and no `README.md` yet — this repo hasn't had its kind-based CI validation stage wired in.
+
+## Renovate
+
+`renovate.json` extends `github>tn4consulting/mfe-pot-platform` — the shared preset (groups `@angular/*`, `@schematics/angular`, `listr2` into one coordinated pinned bump). Don't hand-roll Angular version bumps here independently of the other 5 repos; `platform-versions.json` in `mfe-pot-platform` is the source of truth for what version they should all be on.
