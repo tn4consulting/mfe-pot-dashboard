@@ -1,0 +1,18 @@
+<section class="tasks-list">
+  <gcds-heading tag="h2" id="tasks-heading">My Tasks</gcds-heading>
+  @if (tasks; as data) {
+    @if (data.status === 'ok') {
+      @if (data.data.length === 0) {
+        <p>No outstanding tasks.</p>
+      } @else {
+        <ul>
+          @for (task of data.data; track task) {
+            <li>{{ task }}</li>
+          }
+        </ul>
+      }
+    } @else {
+      <p role="alert">Tasks are temporarily unavailable.</p>
+    }
+  }
+</section>

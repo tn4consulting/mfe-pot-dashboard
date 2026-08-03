@@ -124,32 +124,26 @@ describe('App', () => {
   });
 
   it('passes the fetched overview down to the feature-overview widget', async () => {
+    // Widget-loading behaviour (job applications / EI reporting status) is
+    // covered by dashboard-feature-overview's own spec, which can await the
+    // child component's ngOnInit directly -- this app-level test only
+    // checks that App actually wires its fetched benefitOverview down via
+    // @Input, using My Tasks (rendered synchronously from that input, no
+    // async widget loader involved) as the observable proof.
     global.fetch = jest.fn().mockResolvedValue({
       ok: true,
       json: async () => ({ data: [] }),
     }) as unknown as typeof fetch;
     benefitOverviewApiClient.getOverview.mockResolvedValue({
       ...emptyOverview,
-      jobApplications: {
-        status: 'ok',
-        data: [
-          {
-            id: 'app-1',
-            jobId: 'job-001',
-            status: 'submitted',
-            submittedAt: '2026-07-20T00:00:00.000Z',
-            jobTitle: 'Warehouse Associate',
-            employer: 'Northgate Logistics',
-          },
-        ],
-      },
+      tasks: { status: 'ok', data: ['Submit your next EI report'] },
     });
 
     const fixture = TestBed.createComponent(App);
     await fixture.componentInstance.ngOnInit();
     fixture.detectChanges();
     const compiled = fixture.nativeElement as HTMLElement;
-    expect(compiled.textContent).toContain('Warehouse Associate');
+    expect(compiled.textContent).toContain('Submit your next EI report');
   });
 
   it('degrades gracefully when a benefit-specific tile is unavailable', async () => {
@@ -159,14 +153,14 @@ describe('App', () => {
     }) as unknown as typeof fetch;
     benefitOverviewApiClient.getOverview.mockResolvedValue({
       ...emptyOverview,
-      jobApplications: { status: 'unavailable' },
+      tasks: { status: 'unavailable' },
     });
 
     const fixture = TestBed.createComponent(App);
     await fixture.componentInstance.ngOnInit();
     fixture.detectChanges();
     const compiled = fixture.nativeElement as HTMLElement;
-    expect(compiled.textContent).toContain('Job applications are temporarily unavailable');
+    expect(compiled.textContent).toContain('Tasks are temporarily unavailable');
   });
 
   it('blocks its own content when there is no active session, independent of the shell', async () => {

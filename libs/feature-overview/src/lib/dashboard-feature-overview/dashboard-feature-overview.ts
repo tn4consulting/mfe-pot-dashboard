@@ -1,101 +1,77 @@
-import { Component, DestroyRef, Input, OnInit, inject, signal, computed } from '@angular/core';
+import {
+  Component,
+  DestroyRef,
+  ElementRef,
+  EnvironmentInjector,
+  Input,
+  OnDestroy,
+  OnInit,
+  ViewChild,
+  ViewContainerRef,
+  computed,
+  createEnvironmentInjector,
+  inject,
+  signal,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { GcdsComponentsModule } from '@gcds-core/components-angular';
 import { TranslocoService } from '@tn4consulting/shared-i18n';
 import { getStoredSession, onSessionChange } from '@tn4consulting/shared-auth';
-import { BenefitOverview, EiReportingStatusLabel } from 'dashboard-data-access';
-
-interface BilingualText {
-  en: string;
-  fr: string;
-}
-
-interface WhatsNewItem {
-  id: string;
-  title: BilingualText;
-  body: BilingualText;
-}
-
-interface NeedsAttentionItem {
-  id: string;
-  program: BilingualText;
-  severity: 'warning' | 'danger' | 'info';
-  message: BilingualText;
-}
-
-interface SuggestionItem {
-  id: string;
-  title: BilingualText;
-  body: BilingualText;
-  actionLabel: BilingualText;
-}
+import {
+  EI_REPORTING_STATUS_WIDGET_LOADER,
+  JOB_APPLICATIONS_WIDGET_LOADER,
+  REACT_MOUNTER,
+  ReactMount,
+} from '@tn4consulting/shared-federation-runtime';
+import { BenefitOverview } from 'dashboard-data-access';
+import { DashboardWhatsNewList } from '../dashboard-whats-new-list/dashboard-whats-new-list';
+import { DashboardNeedsAttentionList } from '../dashboard-needs-attention-list/dashboard-needs-attention-list';
+import { DashboardTasksList } from '../dashboard-tasks-list/dashboard-tasks-list';
+import { DashboardConsiderThisList } from '../dashboard-consider-this-list/dashboard-consider-this-list';
 
 /**
- * Mock demo dressing modeled on `dashboard.png` -- deliberately not sourced
- * from dashboard-bff, unlike the rest of this component's content. There's
- * no upstream owner for "what's new"/"needs attention"/"consider this" in
- * this PoT, so it stays as static, bilingual, presentation-only data.
+ * Composes dashboard's own sections (WhatsNewList/NeedsAttentionList/
+ * TasksList/ConsiderThisList, mock or benefitOverview-fed) alongside two
+ * sections owned by other domains and rendered here as federated widgets --
+ * job-bank's JobApplicationsList (React) and employment-insurance's
+ * EiReportingStatusWidget (Angular) -- loaded via the shell-mediated
+ * JOB_APPLICATIONS_WIDGET_LOADER/EI_REPORTING_STATUS_WIDGET_LOADER tokens,
+ * same host-mediated pattern this app's own PaymentHistoryWidget uses when
+ * embedded into employment-life-events. See CLAUDE.md's federation
+ * section for why a remote can't loadRemoteModule another remote itself.
+ *
+ * Both loaders are optionally injected: this component (and the whole
+ * dashboard app) must stay independently testable/serveable with no shell
+ * running, so an absent loader degrades to the same "unavailable" state a
+ * real load failure would show -- not a crash.
  */
-const WHATS_NEW: WhatsNewItem[] = [
-  {
-    id: 'whats-new-ei-increase',
-    title: { en: 'Employment Insurance — benefit increase', fr: "Assurance-emploi — augmentation de la prestation" },
-    body: {
-      en: 'Your weekly EI benefit amount has been recalculated based on your latest report.',
-      fr: 'Le montant de votre prestation hebdomadaire d’assurance-emploi a été recalculé selon votre dernier rapport.',
-    },
-  },
-];
-
-const NEEDS_ATTENTION: NeedsAttentionItem[] = [
-  {
-    id: 'needs-attention-security',
-    program: { en: 'MSCA Account Security', fr: 'Sécurité du compte Mon dossier Service Canada' },
-    severity: 'warning',
-    message: {
-      en: 'Add a second sign-in method to better protect your account.',
-      fr: 'Ajoutez une deuxième méthode de connexion pour mieux protéger votre compte.',
-    },
-  },
-];
-
-const SUGGESTIONS: SuggestionItem[] = [
-  {
-    id: 'suggestion-cdcp',
-    title: { en: 'Canada Dental Care Plan', fr: 'Régime canadien de soins dentaires' },
-    body: {
-      en: 'Based on your profile, you may be eligible for CDCP.',
-      fr: 'Selon votre profil, vous pourriez être admissible au RCSD.',
-    },
-    actionLabel: { en: 'Check eligibility', fr: "Vérifier l'admissibilité" },
-  },
-  {
-    id: 'suggestion-profile',
-    title: { en: 'Update your profile', fr: 'Mettez à jour votre profil' },
-    body: {
-      en: 'Keep your contact information current so we can reach you faster.',
-      fr: 'Gardez vos coordonnées à jour afin que nous puissions vous joindre plus rapidement.',
-    },
-    actionLabel: { en: 'Edit profile', fr: 'Modifier le profil' },
-  },
-];
-
-const REPORTING_STATUS_LABEL: Record<EiReportingStatusLabel, BilingualText> = {
-  not_yet_due: { en: 'Not yet due', fr: 'Pas encore requis' },
-  due_soon: { en: 'Due soon', fr: 'Bientôt requis' },
-  overdue: { en: 'Overdue', fr: 'En retard' },
-};
-
 @Component({
   selector: 'lib-dashboard-feature-overview',
-  imports: [CommonModule, GcdsComponentsModule],
+  imports: [
+    CommonModule,
+    GcdsComponentsModule,
+    DashboardWhatsNewList,
+    DashboardNeedsAttentionList,
+    DashboardTasksList,
+    DashboardConsiderThisList,
+  ],
   templateUrl: './dashboard-feature-overview.html',
   styleUrl: './dashboard-feature-overview.css',
 })
-export class DashboardFeatureOverview implements OnInit {
+export class DashboardFeatureOverview implements OnInit, OnDestroy {
   @Input() benefitOverview: BenefitOverview | null = null;
 
+  @ViewChild('jobApplicationsHost', { static: true })
+  private jobApplicationsHostEl!: ElementRef<HTMLDivElement>;
+
+  @ViewChild('eiReportingStatusHost', { read: ViewContainerRef, static: true })
+  private eiReportingStatusHost!: ViewContainerRef;
+
   private readonly transloco = inject(TranslocoService);
+  private readonly envInjector = inject(EnvironmentInjector);
+  private readonly loadJobApplicationsWidget = inject(JOB_APPLICATIONS_WIDGET_LOADER, { optional: true });
+  private readonly loadEiReportingStatusWidget = inject(EI_REPORTING_STATUS_WIDGET_LOADER, { optional: true });
+  private readonly mountReact = inject(REACT_MOUNTER, { optional: true });
 
   protected readonly citizenName = signal<string | null>(null);
   protected readonly lang = signal(this.transloco.getActiveLang());
@@ -103,31 +79,71 @@ export class DashboardFeatureOverview implements OnInit {
     new Intl.DateTimeFormat(this.lang() === 'fr' ? 'fr-CA' : 'en-CA', { dateStyle: 'long' }).format(new Date()),
   );
 
-  protected readonly whatsNew = WHATS_NEW;
-  protected readonly needsAttention = NEEDS_ATTENTION;
-  protected readonly suggestions = SUGGESTIONS;
+  protected readonly jobApplicationsLoadError = signal(false);
+  protected readonly eiReportingStatusLoadError = signal(false);
+
+  private reactMount: ReactMount | undefined;
+  private destroyed = false;
 
   constructor() {
     const unsubscribe = onSessionChange((session) => this.citizenName.set(session?.name ?? null));
     inject(DestroyRef).onDestroy(unsubscribe);
   }
 
-  ngOnInit(): void {
+  async ngOnInit(): Promise<void> {
     this.citizenName.set(getStoredSession()?.name ?? null);
     this.transloco.langChanges$.subscribe((lang) => this.lang.set(lang));
+
+    await Promise.all([this.mountJobApplicationsWidget(), this.mountEiReportingStatusWidget()]);
   }
 
-  protected text(value: BilingualText): string {
-    return this.lang() === 'fr' ? value.fr : value.en;
+  ngOnDestroy(): void {
+    this.destroyed = true;
+    this.reactMount?.unmount();
   }
 
-  protected reportingStatusLabel(status: EiReportingStatusLabel): string {
-    return this.text(REPORTING_STATUS_LABEL[status]);
+  private async mountJobApplicationsWidget(): Promise<void> {
+    if (!this.loadJobApplicationsWidget) {
+      this.jobApplicationsLoadError.set(true);
+      return;
+    }
+    try {
+      const { component } = await this.loadJobApplicationsWidget();
+      if (this.destroyed) {
+        return;
+      }
+      if (!this.mountReact) {
+        throw new Error(
+          'REACT_MOUNTER is not provided -- a react-kind widget needs the host app to provide it.',
+        );
+      }
+      this.reactMount = this.mountReact(this.jobApplicationsHostEl.nativeElement, component);
+    } catch (err) {
+      console.error('Failed to load job applications widget', err);
+      this.jobApplicationsLoadError.set(true);
+    }
   }
 
-  protected formatDate(iso: string): string {
-    return new Intl.DateTimeFormat(this.lang() === 'fr' ? 'fr-CA' : 'en-CA', { dateStyle: 'long' }).format(
-      new Date(iso),
-    );
+  private async mountEiReportingStatusWidget(): Promise<void> {
+    if (!this.loadEiReportingStatusWidget) {
+      this.eiReportingStatusLoadError.set(true);
+      return;
+    }
+    try {
+      const loaded = await this.loadEiReportingStatusWidget();
+      if (this.destroyed) {
+        return;
+      }
+      if (loaded.kind !== 'angular') {
+        throw new Error('Expected an angular widget for EI reporting status');
+      }
+      const childInjector = loaded.providers.length
+        ? createEnvironmentInjector(loaded.providers, this.envInjector)
+        : this.envInjector;
+      this.eiReportingStatusHost.createComponent(loaded.component, { environmentInjector: childInjector });
+    } catch (err) {
+      console.error('Failed to load EI reporting status widget', err);
+      this.eiReportingStatusLoadError.set(true);
+    }
   }
 }

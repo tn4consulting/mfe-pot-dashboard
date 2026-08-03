@@ -9,93 +9,30 @@
   </gcds-heading>
   <p class="today">{{ formattedDate() }}</p>
 
-  <section>
-    <gcds-heading tag="h2" id="whats-new-heading">What's New</gcds-heading>
-    @for (item of whatsNew; track item.id) {
-      <gcds-notice [noticeTitle]="text(item.title)" noticeRole="info" noticeTitleTag="h3">
-        {{ text(item.body) }}
-      </gcds-notice>
-    }
-  </section>
-
-  <section>
-    <gcds-heading tag="h2" id="needs-attention-heading">Needs Attention</gcds-heading>
-    @for (item of needsAttention; track item.id) {
-      <gcds-notice [noticeTitle]="text(item.program)" [noticeRole]="item.severity" noticeTitleTag="h3">
-        {{ text(item.message) }}
-      </gcds-notice>
-    }
-  </section>
+  <lib-dashboard-whats-new-list></lib-dashboard-whats-new-list>
+  <lib-dashboard-needs-attention-list></lib-dashboard-needs-attention-list>
 
   @if (benefitOverview; as data) {
-    <section>
-      <gcds-heading tag="h2" id="tasks-heading">My Tasks</gcds-heading>
-      @if (data.tasks.status === 'ok') {
-        @if (data.tasks.data.length === 0) {
-          <p>No outstanding tasks.</p>
-        } @else {
-          <ul>
-            @for (task of data.tasks.data; track task) {
-              <li>{{ task }}</li>
-            }
-          </ul>
-        }
-      } @else {
-        <p role="alert">Tasks are temporarily unavailable.</p>
-      }
-    </section>
-
-    <section>
-      <gcds-heading tag="h2" id="ei-reporting-heading">EI Reporting Status</gcds-heading>
-      @if (data.eiReportingStatus.status === 'ok') {
-        @if (data.eiReportingStatus.data; as reportingStatus) {
-          <article class="status-card">
-            <span
-              class="status-pill"
-              [class.status-pill--overdue]="reportingStatus.status === 'overdue'"
-              [class.status-pill--due-soon]="reportingStatus.status === 'due_soon'"
-            >
-              {{ reportingStatusLabel(reportingStatus.status) }}
-            </span>
-            <p>
-              Next report due {{ formatDate(reportingStatus.nextReportDue) }}
-              ({{ reportingStatus.daysUntilDue }} days)
-            </p>
-          </article>
-        } @else {
-          <p>No active EI claim on file.</p>
-        }
-      } @else {
-        <p role="alert">EI reporting status is temporarily unavailable.</p>
-      }
-    </section>
-
-    <section>
-      <gcds-heading tag="h2" id="job-applications-heading">My Job Applications</gcds-heading>
-      @if (data.jobApplications.status === 'ok') {
-        @if (data.jobApplications.data.length === 0) {
-          <p>No job applications on file.</p>
-        } @else {
-          <ul class="job-applications">
-            @for (application of data.jobApplications.data; track application.id) {
-              <li>
-                <strong>{{ application.jobTitle ?? 'Unknown position' }}</strong>
-                — {{ application.employer ?? 'Unknown employer' }}
-                <span class="status-pill">{{ application.status }}</span>
-              </li>
-            }
-          </ul>
-        }
-      } @else {
-        <p role="alert">Job applications are temporarily unavailable.</p>
-      }
-    </section>
+    <lib-dashboard-tasks-list [tasks]="data.tasks"></lib-dashboard-tasks-list>
+  } @else {
+    <lib-dashboard-tasks-list [tasks]="null"></lib-dashboard-tasks-list>
   }
 
   <section>
-    <gcds-heading tag="h2" id="consider-this-heading">Consider This</gcds-heading>
-    @for (item of suggestions; track item.id) {
-      <gcds-card [cardTitle]="text(item.title)" href="#">{{ text(item.body) }}</gcds-card>
+    @if (eiReportingStatusLoadError()) {
+      <gcds-heading tag="h2" id="ei-reporting-heading">EI Reporting Status</gcds-heading>
+      <p role="alert">EI reporting status is temporarily unavailable.</p>
     }
+    <ng-container #eiReportingStatusHost></ng-container>
   </section>
+
+  <section>
+    @if (jobApplicationsLoadError()) {
+      <gcds-heading tag="h2" id="job-applications-heading">My Job Applications</gcds-heading>
+      <p role="alert">Job applications are temporarily unavailable.</p>
+    }
+    <div #jobApplicationsHost></div>
+  </section>
+
+  <lib-dashboard-consider-this-list></lib-dashboard-consider-this-list>
 </section>

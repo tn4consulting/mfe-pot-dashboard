@@ -1,0 +1,6 @@
+<section class="consider-this-list">
+  <gcds-heading tag="h2" id="consider-this-heading">Consider This</gcds-heading>
+  @for (item of items; track item.id) {
+    <gcds-card [cardTitle]="text(item.title)" href="#">{{ text(item.body) }}</gcds-card>
+  }
+</section>

@@ -24,6 +24,9 @@
       "path": "../../libs/feature-payment-history"
     },
     {
+      "path": "../../libs/feature-overview"
+    },
+    {
       "path": "../../libs/data-access"
     }
   ]
