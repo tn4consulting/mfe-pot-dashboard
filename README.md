@@ -1,5 +1,11 @@
 # mfe-pot-dashboard
 
+> **Disclaimer:** This is an independent proof-of-technology project, not
+> affiliated with, endorsed by, or associated with Service Canada,
+> Employment and Social Development Canada (ESDC), or the Government of
+> Canada in any way. "MSCA-D" and any GC branding/design-system references
+> are used only to ground the proof of technology in a realistic scenario.
+
 The **MSCA-D** frontend for the mfe-pot Government of Canada MFE
 proof-of-technology: cross-benefit overview, payment history, correspondence,
 and "tell us once" profile maintenance. Federated as a remote into
