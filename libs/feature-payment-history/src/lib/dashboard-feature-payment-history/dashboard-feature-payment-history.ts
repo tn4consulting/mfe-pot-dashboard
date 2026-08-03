@@ -1,11 +1,12 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { GcdsComponentsModule } from '@gcds-core/components-angular';
 import { PAYMENT_HISTORY_API_CLIENT, Payment } from 'dashboard-data-access';
 import { getStoredSession } from '@tn4consulting/shared-auth';
 
 @Component({
   selector: 'lib-dashboard-feature-payment-history',
-  imports: [CommonModule],
+  imports: [CommonModule, GcdsComponentsModule],
   templateUrl: './dashboard-feature-payment-history.html',
   styleUrl: './dashboard-feature-payment-history.css',
 })

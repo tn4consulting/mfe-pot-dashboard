@@ -8,7 +8,8 @@
     "src/**/*.ts",
     "../../libs/feature-payment-history/src/**/*.ts",
     "../../libs/data-access/src/index.ts",
-    "../../libs/feature-payment-history/src/index.ts"
+    "../../libs/feature-payment-history/src/index.ts",
+    "../../libs/feature-overview/src/index.ts"
   ],
   "exclude": [
     "src/**/*.spec.ts",

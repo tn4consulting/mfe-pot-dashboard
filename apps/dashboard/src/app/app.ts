@@ -4,11 +4,12 @@ import { PageContent } from '@tn4consulting/shared-content-client';
 import { TranslocoPipe, TranslocoService } from '@tn4consulting/shared-i18n';
 import { CLAIM_DASHBOARD, getStoredSession, hasClaim, onSessionChange } from '@tn4consulting/shared-auth';
 import { BENEFIT_OVERVIEW_API_CLIENT, BenefitOverview } from 'dashboard-data-access';
+import { DashboardFeatureOverview } from 'dashboard-feature-overview';
 import { DashboardFeaturePaymentHistory } from 'dashboard-feature-payment-history';
 import { CONTENT_CLIENT, OVERVIEW_CONTENT_KEY } from './content-client.token';
 
 @Component({
-  imports: [RouterModule, TranslocoPipe, DashboardFeaturePaymentHistory],
+  imports: [RouterModule, TranslocoPipe, DashboardFeatureOverview, DashboardFeaturePaymentHistory],
   selector: 'msca-d-root',
   templateUrl: './app.html',
   styleUrl: './app.css',

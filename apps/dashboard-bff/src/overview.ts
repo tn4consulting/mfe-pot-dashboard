@@ -8,6 +8,11 @@ interface JobApplication {
   submittedAt: string;
 }
 
+export interface JobApplicationView extends JobApplication {
+  jobTitle: string | null;
+  employer: string | null;
+}
+
 interface EiClaim {
   id: string;
   status: string;
@@ -15,10 +20,21 @@ interface EiClaim {
   appliedAt: string;
 }
 
+export type EiReportingStatusLabel = 'not_yet_due' | 'due_soon' | 'overdue';
+
+export interface EiReportingStatus {
+  claimId: string;
+  nextReportDue: string;
+  daysUntilDue: number;
+  status: EiReportingStatusLabel;
+}
+
 interface Payment {
   id: string;
   date: string;
   benefit: string;
+  program: string;
+  status: 'pending' | 'complete';
   amount: number;
 }
 
@@ -41,6 +57,8 @@ export interface BenefitOverview {
   tasks: UpstreamResult<string[]>;
   payments: UpstreamResult<Payment[]>;
   correspondence: UpstreamResult<CorrespondenceItem[]>;
+  eiReportingStatus: UpstreamResult<EiReportingStatus | null>;
+  jobApplications: UpstreamResult<JobApplicationView[]>;
 }
 
 /**
@@ -54,9 +72,20 @@ function getEligibleBenefits(): UpstreamResult<string[]> {
   return { status: 'ok', data: ['Employment Insurance', 'Job Bank'] };
 }
 
-function getTasks(claim: EiClaim | null): UpstreamResult<string[]> {
+function getTasks(
+  claim: EiClaim | null,
+  reportingStatus: EiReportingStatus | null,
+): UpstreamResult<string[]> {
   const tasks: string[] = [];
-  if (claim) {
+  if (claim && reportingStatus) {
+    if (reportingStatus.status === 'overdue') {
+      tasks.push('Your EI report is overdue — submit it as soon as possible');
+    } else if (reportingStatus.status === 'due_soon') {
+      tasks.push(`Submit your EI report — due in ${Math.max(reportingStatus.daysUntilDue, 0)} days`);
+    } else {
+      tasks.push('Submit your next EI report');
+    }
+  } else if (claim) {
     tasks.push('Submit your next EI report');
   } else {
     tasks.push('Consider applying for Employment Insurance');
@@ -123,8 +152,36 @@ async function getEiClaim(sub: string): Promise<UpstreamResult<EiClaim | null>> 
   }
 }
 
+/**
+ * There's no due-date/cadence concept anywhere else in this PoT --
+ * employment-insurance-bff's own `/api/reporting-status` synthesizes one
+ * (see its reporting-status.ts). A citizen with no EI claim on file gets a
+ * 404 there too, same "legitimate empty state" treatment as `getEiClaim`.
+ */
+async function getEiReportingStatus(sub: string): Promise<UpstreamResult<EiReportingStatus | null>> {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 2000);
+  try {
+    const response = await fetch(
+      `${upstreams.employmentInsuranceBffUrl}/api/reporting-status?applicantSub=${encodeURIComponent(sub)}`,
+      { signal: controller.signal },
+    );
+    if (response.status === 404) {
+      return { status: 'ok', data: null };
+    }
+    if (!response.ok) {
+      return { status: 'unavailable' };
+    }
+    return { status: 'ok', data: (await response.json()) as EiReportingStatus };
+  } catch {
+    return { status: 'unavailable' };
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
 export async function getBenefitOverview(sub: string): Promise<BenefitOverview> {
-  const [payments, correspondence, claim, jobApplications] = await Promise.all([
+  const [payments, correspondence, claim, jobApplications, eiReportingStatus] = await Promise.all([
     fetchJson<Payment[]>(
       `${upstreams.clientProfileServiceUrl}/api/profile/${encodeURIComponent(sub)}/payments`,
     ),
@@ -132,16 +189,22 @@ export async function getBenefitOverview(sub: string): Promise<BenefitOverview> 
       `${upstreams.clientProfileServiceUrl}/api/profile/${encodeURIComponent(sub)}/correspondence`,
     ),
     getEiClaim(sub),
-    fetchJson<JobApplication[]>(
+    fetchJson<JobApplicationView[]>(
       `${upstreams.jobBankBffUrl}/api/applications?applicantSub=${encodeURIComponent(sub)}`,
     ),
+    getEiReportingStatus(sub),
   ]);
 
   return {
     eligibleBenefits: getEligibleBenefits(),
     activeApplications: buildActiveApplications(jobApplications, claim),
-    tasks: getTasks(claim.status === 'ok' ? claim.data : null),
+    tasks: getTasks(
+      claim.status === 'ok' ? claim.data : null,
+      eiReportingStatus.status === 'ok' ? eiReportingStatus.data : null,
+    ),
     payments,
     correspondence,
+    eiReportingStatus,
+    jobApplications,
   };
 }

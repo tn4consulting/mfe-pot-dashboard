@@ -1,8 +1,32 @@
 <section class="payment-history-widget">
-  <h2>Payment history</h2>
+  <gcds-heading tag="h2">Payment history</gcds-heading>
   @if (loadError()) {
     <p role="alert">Payment history is temporarily unavailable.</p>
   } @else {
-    <ul>@for (payment of payments(); track payment.id) {<li>{{ payment.date }} — {{ payment.benefit }} — ${{ payment.amount.toFixed(2) }}</li>}</ul>
+    <table>
+      <caption class="visually-hidden">Payment history</caption>
+      <thead>
+        <tr>
+          <th scope="col">Program</th>
+          <th scope="col">Status</th>
+          <th scope="col">Date</th>
+          <th scope="col">Amount</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (payment of payments(); track payment.id) {
+          <tr>
+            <td>{{ payment.benefit }}</td>
+            <td>
+              <span class="status-pill" [class.status-pill--complete]="payment.status === 'complete'">
+                {{ payment.status === 'complete' ? 'Complete' : 'Pending' }}
+              </span>
+            </td>
+            <td>{{ payment.date }}</td>
+            <td>${{ payment.amount.toFixed(2) }}</td>
+          </tr>
+        }
+      </tbody>
+    </table>
   }
 </section>

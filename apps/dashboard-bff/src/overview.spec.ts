@@ -19,13 +19,23 @@ describe('getBenefitOverview', () => {
     global.fetch = jest.fn(async (url: string | URL | Request) => {
       const href = url.toString();
       if (href.includes('/api/applications')) {
-        return jsonResponse([{ id: 'app-1', jobId: 'job-001', status: 'submitted' }]);
+        return jsonResponse([
+          { id: 'app-1', jobId: 'job-001', status: 'submitted', jobTitle: 'Warehouse Associate', employer: 'Northgate Logistics' },
+        ]);
+      }
+      if (href.includes('/api/reporting-status')) {
+        return jsonResponse({
+          claimId: 'claim-1',
+          nextReportDue: '2026-07-22T00:00:00.000Z',
+          daysUntilDue: 7,
+          status: 'not_yet_due',
+        });
       }
       if (href.includes('/api/claims')) {
         return jsonResponse({ id: 'claim-1', status: 'approved', weeklyBenefitAmount: 638 });
       }
       if (href.includes('/payments')) {
-        return jsonResponse([{ id: 'pay-1', date: '2026-07-15', benefit: 'EI', amount: 638 }]);
+        return jsonResponse([{ id: 'pay-1', date: '2026-07-15', benefit: 'EI', program: 'EI', status: 'pending', amount: 638 }]);
       }
       if (href.includes('/correspondence')) {
         return jsonResponse([{ id: 'corr-1', date: '2026-07-10', subject: 'Approved' }]);
@@ -46,12 +56,33 @@ describe('getBenefitOverview', () => {
     expect(overview.tasks).toEqual({ status: 'ok', data: ['Submit your next EI report'] });
     expect(overview.payments.status).toBe('ok');
     expect(overview.correspondence.status).toBe('ok');
+    expect(overview.eiReportingStatus).toEqual({
+      status: 'ok',
+      data: {
+        claimId: 'claim-1',
+        nextReportDue: '2026-07-22T00:00:00.000Z',
+        daysUntilDue: 7,
+        status: 'not_yet_due',
+      },
+    });
+    expect(overview.jobApplications).toEqual({
+      status: 'ok',
+      data: [
+        {
+          id: 'app-1',
+          jobId: 'job-001',
+          status: 'submitted',
+          jobTitle: 'Warehouse Associate',
+          employer: 'Northgate Logistics',
+        },
+      ],
+    });
   });
 
   it('treats "no EI claim on file" (404) as a legitimate empty state, not a failure', async () => {
     global.fetch = jest.fn(async (url: string | URL | Request) => {
       const href = url.toString();
-      if (href.includes('/api/claims')) {
+      if (href.includes('/api/claims') || href.includes('/api/reporting-status')) {
         return jsonResponse({ error: 'not found' }, 404);
       }
       if (href.includes('/api/applications')) {
@@ -67,6 +98,32 @@ describe('getBenefitOverview', () => {
       status: 'ok',
       data: ['Consider applying for Employment Insurance'],
     });
+    expect(overview.eiReportingStatus).toEqual({ status: 'ok', data: null });
+  });
+
+  it('produces a due-soon/overdue task message driven by real reporting status', async () => {
+    global.fetch = jest.fn(async (url: string | URL | Request) => {
+      const href = url.toString();
+      if (href.includes('/api/reporting-status')) {
+        return jsonResponse({
+          claimId: 'claim-1',
+          nextReportDue: '2026-07-16T00:00:00.000Z',
+          daysUntilDue: -1,
+          status: 'overdue',
+        });
+      }
+      if (href.includes('/api/claims')) {
+        return jsonResponse({ id: 'claim-1', status: 'approved', weeklyBenefitAmount: 638 });
+      }
+      return jsonResponse([]);
+    }) as unknown as typeof fetch;
+
+    const overview = await getBenefitOverview('mock-citizen-001');
+
+    expect(overview.tasks).toEqual({
+      status: 'ok',
+      data: ['Your EI report is overdue — submit it as soon as possible'],
+    });
   });
 
   it('degrades only the affected tile when client-profile-service is unreachable', async () => {
@@ -75,7 +132,7 @@ describe('getBenefitOverview', () => {
       if (href.includes('/payments') || href.includes('/correspondence')) {
         throw new Error('connection refused');
       }
-      if (href.includes('/api/claims')) {
+      if (href.includes('/api/claims') || href.includes('/api/reporting-status')) {
         return jsonResponse({ error: 'not found' }, 404);
       }
       return jsonResponse([]);
@@ -98,7 +155,7 @@ describe('getBenefitOverview', () => {
       if (href.includes('/api/applications')) {
         throw new Error('connection refused');
       }
-      if (href.includes('/api/claims')) {
+      if (href.includes('/api/claims') || href.includes('/api/reporting-status')) {
         return jsonResponse({ error: 'not found' }, 404);
       }
       return jsonResponse([]);
@@ -107,7 +164,26 @@ describe('getBenefitOverview', () => {
     const overview = await getBenefitOverview('mock-citizen-001');
 
     expect(overview.activeApplications).toEqual({ status: 'unavailable' });
+    expect(overview.jobApplications).toEqual({ status: 'unavailable' });
     expect(overview.payments.status).toBe('ok');
     expect(overview.correspondence.status).toBe('ok');
+  });
+
+  it('marks eiReportingStatus unavailable when employment-insurance-bff fails', async () => {
+    global.fetch = jest.fn(async (url: string | URL | Request) => {
+      const href = url.toString();
+      if (href.includes('/api/reporting-status')) {
+        throw new Error('connection refused');
+      }
+      if (href.includes('/api/claims')) {
+        return jsonResponse({ id: 'claim-1', status: 'approved', weeklyBenefitAmount: 638 });
+      }
+      return jsonResponse([]);
+    }) as unknown as typeof fetch;
+
+    const overview = await getBenefitOverview('mock-citizen-001');
+
+    expect(overview.eiReportingStatus).toEqual({ status: 'unavailable' });
+    expect(overview.tasks).toEqual({ status: 'ok', data: ['Submit your next EI report'] });
   });
 });

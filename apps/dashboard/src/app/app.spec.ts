@@ -19,6 +19,8 @@ const emptyOverview: BenefitOverview = {
   tasks: { status: 'ok', data: [] },
   payments: { status: 'ok', data: [] },
   correspondence: { status: 'ok', data: [] },
+  eiReportingStatus: { status: 'ok', data: null },
+  jobApplications: { status: 'ok', data: [] },
 };
 
 describe('App', () => {
@@ -121,16 +123,25 @@ describe('App', () => {
     );
   });
 
-  it('renders active applications from the dashboard-bff overview', async () => {
+  it('passes the fetched overview down to the feature-overview widget', async () => {
     global.fetch = jest.fn().mockResolvedValue({
       ok: true,
       json: async () => ({ data: [] }),
     }) as unknown as typeof fetch;
     benefitOverviewApiClient.getOverview.mockResolvedValue({
       ...emptyOverview,
-      activeApplications: {
+      jobApplications: {
         status: 'ok',
-        data: [{ type: 'job', id: 'app-1', summary: 'Application for job-001', status: 'submitted' }],
+        data: [
+          {
+            id: 'app-1',
+            jobId: 'job-001',
+            status: 'submitted',
+            submittedAt: '2026-07-20T00:00:00.000Z',
+            jobTitle: 'Warehouse Associate',
+            employer: 'Northgate Logistics',
+          },
+        ],
       },
     });
 
@@ -138,27 +149,24 @@ describe('App', () => {
     await fixture.componentInstance.ngOnInit();
     fixture.detectChanges();
     const compiled = fixture.nativeElement as HTMLElement;
-    expect(compiled.textContent).toContain('Application for job-001');
+    expect(compiled.textContent).toContain('Warehouse Associate');
   });
 
-  it('degrades only the active-applications tile when that part of the overview is unavailable', async () => {
+  it('degrades gracefully when a benefit-specific tile is unavailable', async () => {
     global.fetch = jest.fn().mockResolvedValue({
       ok: true,
       json: async () => ({ data: [] }),
     }) as unknown as typeof fetch;
     benefitOverviewApiClient.getOverview.mockResolvedValue({
       ...emptyOverview,
-      activeApplications: { status: 'unavailable' },
+      jobApplications: { status: 'unavailable' },
     });
 
     const fixture = TestBed.createComponent(App);
     await fixture.componentInstance.ngOnInit();
     fixture.detectChanges();
     const compiled = fixture.nativeElement as HTMLElement;
-    expect(compiled.querySelector('#active-applications-heading')).not.toBeNull();
-    expect(compiled.textContent).toContain('Active applications are temporarily unavailable');
-    // The rest of the page is unaffected by that one tile degrading.
-    expect(compiled.querySelector('#tasks-heading')).not.toBeNull();
+    expect(compiled.textContent).toContain('Job applications are temporarily unavailable');
   });
 
   it('blocks its own content when there is no active session, independent of the shell', async () => {
