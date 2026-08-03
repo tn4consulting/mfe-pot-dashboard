@@ -1,6 +1,7 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { GcdsComponentsModule } from '@gcds-core/components-angular';
+import { ScdsCard } from '@tn4consulting/shared-ui-scds';
 import { TranslocoService } from '@tn4consulting/shared-i18n';
 
 interface BilingualText {
@@ -44,7 +45,7 @@ const SUGGESTIONS: SuggestionItem[] = [
 
 @Component({
   selector: 'lib-dashboard-consider-this-list',
-  imports: [CommonModule, GcdsComponentsModule],
+  imports: [CommonModule, GcdsComponentsModule, ScdsCard],
   templateUrl: './dashboard-consider-this-list.html',
   styleUrl: './dashboard-consider-this-list.css',
 })

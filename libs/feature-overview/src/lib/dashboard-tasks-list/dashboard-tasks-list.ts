@@ -1,14 +1,17 @@
 import { Component, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { GcdsComponentsModule } from '@gcds-core/components-angular';
+import { ScdsListColumn, ScdsMultiColumnList } from '@tn4consulting/shared-ui-scds';
 import { UpstreamResult } from 'dashboard-data-access';
 
 @Component({
   selector: 'lib-dashboard-tasks-list',
-  imports: [CommonModule, GcdsComponentsModule],
+  imports: [CommonModule, GcdsComponentsModule, ScdsMultiColumnList],
   templateUrl: './dashboard-tasks-list.html',
   styleUrl: './dashboard-tasks-list.css',
 })
 export class DashboardTasksList {
   @Input() tasks: UpstreamResult<string[]> | null = null;
+
+  protected readonly columns: ScdsListColumn<string>[] = [{ id: 'task', header: 'Task', cell: (task) => task }];
 }

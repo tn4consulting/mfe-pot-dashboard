@@ -24,4 +24,17 @@ describe('DashboardConsiderThisList', () => {
       'Based on your profile, you may be eligible for CDCP',
     );
   });
+
+  it('renders each suggestion as a static (non-navigating) scds-card with its action label', () => {
+    const fixture = TestBed.createComponent(DashboardConsiderThisList);
+    fixture.componentInstance.ngOnInit();
+    fixture.detectChanges();
+
+    const compiled = fixture.nativeElement as HTMLElement;
+    const cards = compiled.querySelectorAll('scds-card');
+    expect(cards.length).toBeGreaterThan(0);
+    cards.forEach((card) => expect(card.getAttribute('href')).toBeNull());
+    expect(compiled.textContent).toContain('Check eligibility');
+    expect(compiled.querySelector('a[href="#"]')).toBeNull();
+  });
 });

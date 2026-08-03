@@ -24,6 +24,16 @@ describe('DashboardTasksList', () => {
     expect((fixture.nativeElement as HTMLElement).textContent).toContain('Submit your next EI report');
   });
 
+  it('renders each task as a scds-multi-column-list listitem', () => {
+    const fixture = TestBed.createComponent(DashboardTasksList);
+    fixture.componentInstance.tasks = { status: 'ok', data: ['Submit your next EI report', 'Update your address'] };
+    fixture.detectChanges();
+
+    const rows = (fixture.nativeElement as HTMLElement).querySelectorAll('li[role="listitem"]');
+    expect(rows.length).toBe(2);
+    expect(rows[0].textContent).toContain('Submit your next EI report');
+  });
+
   it('degrades to an alert when tasks are unavailable', () => {
     const fixture = TestBed.createComponent(DashboardTasksList);
     fixture.componentInstance.tasks = { status: 'unavailable' };
