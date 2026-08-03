@@ -67,8 +67,13 @@ describe('DashboardFeatureOverview', () => {
     fixture.componentInstance.benefitOverview = fullOverview();
     await fixture.componentInstance.ngOnInit();
     fixture.detectChanges();
+    // scds-multi-column-list renders "My Tasks" into its own shadow DOM on
+    // a tick outside Angular's change detection -- see the equivalent
+    // helper in dashboard-tasks-list.spec.ts for why.
+    await new Promise((resolve) => setTimeout(resolve, 20));
 
-    expect((fixture.nativeElement as HTMLElement).textContent).toContain('Submit your next EI report');
+    const list = (fixture.nativeElement as HTMLElement).querySelector('scds-multi-column-list');
+    expect(list?.shadowRoot?.textContent).toContain('Submit your next EI report');
   });
 
   it('degrades both federated widget sections to unavailable when no shell/loader is present', async () => {

@@ -13,5 +13,5 @@ import { UpstreamResult } from 'dashboard-data-access';
 export class DashboardTasksList {
   @Input() tasks: UpstreamResult<string[]> | null = null;
 
-  protected readonly columns: ScdsListColumn<string>[] = [{ id: 'task', header: 'Task', cell: (task) => task }];
+  protected readonly columns: ScdsListColumn[] = [{ id: 'task', header: 'Task', cell: (task) => task as string }];
 }

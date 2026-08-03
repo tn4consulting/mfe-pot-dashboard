@@ -3,7 +3,7 @@
   @for (item of items; track item.id) {
     <scds-card [cardTitle]="text(item.title)">
       {{ text(item.body) }}
-      <div scdsCardActions><gcds-button buttonRole="secondary" size="small">{{ text(item.actionLabel) }}</gcds-button></div>
+      <div slot="scdsCardActions"><gcds-button buttonRole="secondary" size="small">{{ text(item.actionLabel) }}</gcds-button></div>
     </scds-card>
   }
 </section>

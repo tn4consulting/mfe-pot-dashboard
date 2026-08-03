@@ -128,8 +128,11 @@ describe('App', () => {
     // covered by dashboard-feature-overview's own spec, which can await the
     // child component's ngOnInit directly -- this app-level test only
     // checks that App actually wires its fetched benefitOverview down via
-    // @Input, using My Tasks (rendered synchronously from that input, no
-    // async widget loader involved) as the observable proof.
+    // @Input, using My Tasks as the observable proof. My Tasks renders via
+    // scds-multi-column-list, a custom element whose shadow-DOM render
+    // happens on its own tick outside Angular's change detection and isn't
+    // reachable via the host's plain textContent -- hence the extra wait
+    // and the shadowRoot query.
     global.fetch = jest.fn().mockResolvedValue({
       ok: true,
       json: async () => ({ data: [] }),
@@ -142,8 +145,9 @@ describe('App', () => {
     const fixture = TestBed.createComponent(App);
     await fixture.componentInstance.ngOnInit();
     fixture.detectChanges();
-    const compiled = fixture.nativeElement as HTMLElement;
-    expect(compiled.textContent).toContain('Submit your next EI report');
+    await new Promise((resolve) => setTimeout(resolve, 20));
+    const list = (fixture.nativeElement as HTMLElement).querySelector('scds-multi-column-list');
+    expect(list?.shadowRoot?.textContent).toContain('Submit your next EI report');
   });
 
   it('degrades gracefully when a benefit-specific tile is unavailable', async () => {
