@@ -42,4 +42,9 @@ describe('dashboard-bff', () => {
     expect(res.status).toBe(200);
     expect(res.body).toEqual([{ id: 'pay-1', date: '2026-07-15', benefit: 'EI', amount: 638 }]);
   });
+
+  it('resets its own session-cache state', async () => {
+    const res = await request(app).post('/api/reset');
+    expect(res.status).toBe(204);
+  });
 });

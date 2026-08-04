@@ -167,12 +167,14 @@ async function getEiReportingStatus(sub: string): Promise<UpstreamResult<EiRepor
 }
 
 export async function getBenefitOverview(sub: string): Promise<BenefitOverview> {
-  const [claim, jobApplications, eiReportingStatus] = await Promise.all([
+  const [claim, jobApplications, eiReportingStatus, payments, correspondence] = await Promise.all([
     getEiClaim(sub),
     fetchJson<JobApplicationView[]>(
       `${upstreams.jobBankBffUrl}/api/applications?applicantSub=${encodeURIComponent(sub)}`,
     ),
     getEiReportingStatus(sub),
+    getPayments(sub),
+    getCorrespondence(sub),
   ]);
 
   return {
@@ -184,8 +186,8 @@ export async function getBenefitOverview(sub: string): Promise<BenefitOverview> 
     ),
     // Local data -- can't fail, so always 'ok', unlike the job-bank-bff/
     // employment-insurance-bff-sourced tiles above.
-    payments: { status: 'ok', data: getPayments(sub) },
-    correspondence: { status: 'ok', data: getCorrespondence(sub) },
+    payments: { status: 'ok', data: payments },
+    correspondence: { status: 'ok', data: correspondence },
     eiReportingStatus,
     jobApplications,
   };

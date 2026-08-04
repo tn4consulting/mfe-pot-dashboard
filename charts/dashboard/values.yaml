@@ -41,11 +41,15 @@ backend:
   # served from dashboard-bff's own local data (data.ts), so /api/payments
   # and /api/overview's payments/correspondence tiles no longer depend on
   # any upstream being deployed.
+  # REDIS_URL points at mfe-pot-platform's charts/session-cache release --
+  # a third, separate cross-Helm-release in-cluster Service, same kind of
+  # traffic as the two BFF URLs above.
   env:
     HOST: "0.0.0.0"
     PORT: "3004"
     JOB_BANK_BFF_URL: "http://job-bank-bff.default.svc.cluster.local:3001"
     EMPLOYMENT_INSURANCE_BFF_URL: "http://employment-insurance-bff.default.svc.cluster.local:3002"
+    REDIS_URL: "redis://session-cache.default.svc.cluster.local:6379"
 
 ingress:
   host: dashboard.mfe-pot.local

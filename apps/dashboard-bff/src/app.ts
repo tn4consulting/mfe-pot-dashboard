@@ -1,5 +1,6 @@
 import cors from 'cors';
 import express, { Express } from 'express';
+import { sessionCache } from './config';
 import { getBenefitOverview } from './overview';
 import { getPayments } from './data';
 
@@ -27,13 +28,21 @@ export function createApp(): Express {
     res.json(await getBenefitOverview(sub));
   });
 
-  app.get('/api/payments', (req, res) => {
+  app.get('/api/payments', async (req, res) => {
     const sub = req.query['sub'];
     if (typeof sub !== 'string') {
       res.status(400).json({ error: 'sub query parameter is required' });
       return;
     }
-    res.json(getPayments(sub));
+    res.json(await getPayments(sub));
+  });
+
+  // PoT-only, no auth -- unlocks a repeatable `pnpm demo:reset` (see
+  // mfe-pot/TODO.md) by clearing this BFF's own Redis-backed state between
+  // local/CI runs and live demos.
+  app.post('/api/reset', async (_req, res) => {
+    await sessionCache.reset();
+    res.status(204).send();
   });
 
   return app;
