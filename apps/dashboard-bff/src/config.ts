@@ -5,6 +5,12 @@ export const upstreams = {
   employmentInsuranceBffUrl: process.env['EMPLOYMENT_INSURANCE_BFF_URL'] ?? 'http://localhost:3002',
 };
 
+export const mockIdp = {
+  jwksUrl: process.env['MOCK_IDP_JWKS_URL'] ?? 'http://localhost:3005/.well-known/jwks.json',
+  issuer: process.env['MOCK_IDP_ISSUER'] ?? 'http://localhost:3005',
+  audience: 'mfe-pot-bffs',
+};
+
 /**
  * No REDIS_URL set (e.g. plain `nx serve`) falls back to an in-process
  * cache -- zero extra local setup, matching every other BFF env var's
