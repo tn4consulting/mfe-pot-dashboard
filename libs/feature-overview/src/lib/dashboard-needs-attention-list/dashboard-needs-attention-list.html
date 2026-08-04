@@ -1,0 +1,8 @@
+<section class="needs-attention-list">
+  <gcds-heading tag="h2" id="needs-attention-heading">Needs Attention</gcds-heading>
+  @for (item of items; track item.id) {
+    <gcds-notice [noticeTitle]="text(item.program)" [noticeRole]="item.severity" noticeTitleTag="h3">
+      {{ text(item.message) }}
+    </gcds-notice>
+  }
+</section>

@@ -8,8 +8,8 @@ spec:
     - host: {{ .Values.ingress.host }}
       http:
         paths:
-          # benefit-aggregation-bff's own routes already carry the /api
-          # prefix internally (see apps/benefit-aggregation-bff/src/app.ts),
+          # dashboard-bff's own routes already carry the /api
+          # prefix internally (see apps/dashboard-bff/src/app.ts),
           # so this is a plain prefix match -- no rewrite-target needed.
           # Listed before the frontend's / rule so it takes precedence.
           - path: /api

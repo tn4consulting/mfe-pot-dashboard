@@ -1,10 +1,10 @@
 module.exports = {
-  displayName: 'benefit-aggregation-bff',
+  displayName: 'dashboard-bff',
   preset: '../../jest.preset.js',
   testEnvironment: 'node',
   transform: {
     '^.+\\.[tj]s$': ['ts-jest', { tsconfig: '<rootDir>/tsconfig.spec.json' }],
   },
   moduleFileExtensions: ['ts', 'js', 'html'],
-  coverageDirectory: '../../coverage/apps/benefit-aggregation-bff',
+  coverageDirectory: '../../coverage/apps/dashboard-bff',
 };

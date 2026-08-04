@@ -18,10 +18,17 @@ describe('DashboardFeaturePaymentHistory', () => {
     }).compileComponents();
   }
 
-  it('renders payments fetched from client-profile-service', async () => {
+  it('renders payments fetched from dashboard-bff', async () => {
     storeSession(createMockSession());
     apiClient.getPayments.mockResolvedValue([
-      { id: 'pay-1', date: '2026-07-15', benefit: 'Employment Insurance', amount: 638 },
+      {
+        id: 'pay-1',
+        date: '2026-07-15',
+        benefit: 'Employment Insurance',
+        program: 'EI',
+        status: 'pending',
+        amount: 638,
+      },
     ]);
     await setup();
 
@@ -29,7 +36,9 @@ describe('DashboardFeaturePaymentHistory', () => {
     await fixture.componentInstance.ngOnInit();
     fixture.detectChanges();
 
-    expect((fixture.nativeElement as HTMLElement).textContent).toContain('Employment Insurance');
+    const text = (fixture.nativeElement as HTMLElement).textContent;
+    expect(text).toContain('Employment Insurance');
+    expect(text).toContain('Pending');
   });
 
   it('shows an error state when payments fail to load', async () => {

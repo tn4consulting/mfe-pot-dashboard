@@ -1,0 +1,9 @@
+<section class="consider-this-list">
+  <gcds-heading tag="h2" id="consider-this-heading">Consider This</gcds-heading>
+  @for (item of items; track item.id) {
+    <scds-card [cardTitle]="text(item.title)">
+      {{ text(item.body) }}
+      <div slot="scdsCardActions"><gcds-button buttonRole="secondary" size="small">{{ text(item.actionLabel) }}</gcds-button></div>
+    </scds-card>
+  }
+</section>

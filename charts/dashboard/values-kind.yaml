@@ -11,7 +11,7 @@ frontend:
 
 backend:
   image:
-    repository: mfe-pot-benefit-aggregation-bff
+    repository: mfe-pot-dashboard-bff
     tag: kind
     pullPolicy: Never
 

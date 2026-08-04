@@ -1,7 +1,7 @@
 {
-  "name": "benefit-aggregation-bff",
+  "name": "dashboard-bff",
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
-  "sourceRoot": "apps/benefit-aggregation-bff/src",
+  "sourceRoot": "apps/dashboard-bff/src",
   "projectType": "application",
   "tags": ["type:app", "scope:dashboard"],
   "targets": {
@@ -11,12 +11,12 @@
       "defaultConfiguration": "production",
       "options": {
         "platform": "node",
-        "outputPath": "dist/apps/benefit-aggregation-bff",
+        "outputPath": "dist/apps/dashboard-bff",
         "format": ["cjs"],
         "bundle": false,
-        "main": "apps/benefit-aggregation-bff/src/main.ts",
-        "tsConfig": "apps/benefit-aggregation-bff/tsconfig.app.json",
-        "assets": ["apps/benefit-aggregation-bff/src/assets"],
+        "main": "apps/dashboard-bff/src/main.ts",
+        "tsConfig": "apps/dashboard-bff/tsconfig.app.json",
+        "assets": ["apps/dashboard-bff/src/assets"],
         "generatePackageJson": true,
         "esbuildOptions": {
           "sourcemap": true,
@@ -42,8 +42,8 @@
       "cache": true,
       "executor": "@nx/js:prune-lockfile",
       "outputs": [
-        "{workspaceRoot}/dist/apps/benefit-aggregation-bff/package.json",
-        "{workspaceRoot}/dist/apps/benefit-aggregation-bff/pnpm-lock.yaml"
+        "{workspaceRoot}/dist/apps/dashboard-bff/package.json",
+        "{workspaceRoot}/dist/apps/dashboard-bff/pnpm-lock.yaml"
       ],
       "options": {
         "buildTarget": "build"
@@ -53,7 +53,7 @@
       "dependsOn": ["build"],
       "cache": true,
       "outputs": [
-        "{workspaceRoot}/dist/apps/benefit-aggregation-bff/workspace_modules"
+        "{workspaceRoot}/dist/apps/dashboard-bff/workspace_modules"
       ],
       "executor": "@nx/js:copy-workspace-modules",
       "options": {
@@ -70,15 +70,15 @@
       "defaultConfiguration": "development",
       "dependsOn": ["build"],
       "options": {
-        "buildTarget": "benefit-aggregation-bff:build",
+        "buildTarget": "dashboard-bff:build",
         "runBuildTargetDependencies": false
       },
       "configurations": {
         "development": {
-          "buildTarget": "benefit-aggregation-bff:build:development"
+          "buildTarget": "dashboard-bff:build:development"
         },
         "production": {
-          "buildTarget": "benefit-aggregation-bff:build:production"
+          "buildTarget": "dashboard-bff:build:production"
         }
       }
     },
@@ -86,7 +86,7 @@
       "executor": "@nx/jest:jest",
       "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
       "options": {
-        "jestConfig": "apps/benefit-aggregation-bff/jest.config.cts",
+        "jestConfig": "apps/dashboard-bff/jest.config.cts",
         "passWithNoTests": true
       }
     }

@@ -16,8 +16,7 @@ import { fetchRuntimeConfig } from '@tn4consulting/shared-runtime-config';
  */
 const devDefaults = {
   strapiBaseUrl: 'http://localhost:1337',
-  benefitAggregationBffBaseUrl: 'http://localhost:3004',
-  clientProfileServiceBaseUrl: 'http://localhost:3003',
+  dashboardBffBaseUrl: 'http://localhost:3004',
 };
 
 export function loadRuntimeConfig(ownOriginUrl: string) {

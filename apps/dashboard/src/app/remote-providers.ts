@@ -24,11 +24,11 @@ export const REMOTE_PROVIDERS = loadRuntimeConfig(assetBaseUrl).then((runtimeCon
   ...provideMfeTransloco(assetBaseUrl),
   {
     provide: BENEFIT_OVERVIEW_API_CLIENT,
-    useValue: new HttpBenefitOverviewApiClient(runtimeConfig.benefitAggregationBffBaseUrl),
+    useValue: new HttpBenefitOverviewApiClient(runtimeConfig.dashboardBffBaseUrl),
   },
   {
     provide: PAYMENT_HISTORY_API_CLIENT,
-    useValue: new HttpPaymentHistoryApiClient(runtimeConfig.clientProfileServiceBaseUrl),
+    useValue: new HttpPaymentHistoryApiClient(runtimeConfig.dashboardBffBaseUrl),
   },
   {
     provide: CONTENT_CLIENT,

@@ -7,25 +7,28 @@ frontend:
     pullPolicy: IfNotPresent
   containerPort: 80
   servicePort: 80
-  # benefitAggregationBffBaseUrl is same-origin (this app's own BFF, via
+  # dashboardBffBaseUrl is same-origin (this app's own BFF, via
   # the /api Ingress path rule below) -- see CLAUDE.md's Hosting section.
-  # strapiBaseUrl/clientProfileServiceBaseUrl point at services that stay
-  # in the platform repo (Strapi CMS, client-profile-service) which don't
-  # have their own charts built yet (see the platform repo's plan doc) --
-  # left as plausible in-cluster Service DNS names; calls to them will
-  # fail to resolve until those charts exist, which dashboard's own
-  # ContentClient/data-access layers are designed to degrade against, not
-  # a regression introduced by this extraction.
+  # Empty, not "/api": HttpBenefitOverviewApiClient/HttpPaymentHistoryApiClient
+  # already append "/api/..." themselves (`${baseUrl}/api/overview`), so
+  # this value is just "this app's own origin" -- shared-runtime-config's
+  # fetchRuntimeConfig resolves "" to that origin. A literal "/api" here
+  # double-prefixes every request to /api/api/... and 404s.
+  # strapiBaseUrl now points at charts/strapi's real public Ingress
+  # hostname (mfe-pot-platform), not in-cluster Service DNS -- this call
+  # is browser-to-server (ContentClient fetches Strapi directly from the
+  # end user's browser, same as shell's federation-manifest fetch), so a
+  # cluster-internal name would never resolve there even once the chart
+  # existed.
   runtimeConfig:
-    benefitAggregationBffBaseUrl: "/api"
-    strapiBaseUrl: "http://strapi.default.svc.cluster.local:1337"
-    clientProfileServiceBaseUrl: "http://client-profile-service.default.svc.cluster.local:3003"
+    dashboardBffBaseUrl: ""
+    strapiBaseUrl: "http://cms.mfe-pot.local"
 
 backend:
-  name: benefit-aggregation-bff
+  name: dashboard-bff
   replicaCount: 1
   image:
-    repository: mfe-pot-benefit-aggregation-bff
+    repository: mfe-pot-dashboard-bff
     tag: latest
     pullPolicy: IfNotPresent
   containerPort: 3004
@@ -34,16 +37,19 @@ backend:
   # Helm releases' in-cluster Services (job-bank-bff, employment-insurance-bff
   # -- each already a Deployment+Service pair from its own extracted
   # repo's chart), not their public Ingress hostnames -- this is genuine
-  # cluster-internal service-to-service traffic. CLIENT_PROFILE_SERVICE_URL
-  # has no deployed Service yet (see frontend.runtimeConfig comment above);
-  # that upstream call fails and degrades gracefully per overview.ts's
-  # existing partial-failure contract.
+  # cluster-internal service-to-service traffic. Payments/correspondence are
+  # served from dashboard-bff's own local data (data.ts), so /api/payments
+  # and /api/overview's payments/correspondence tiles no longer depend on
+  # any upstream being deployed.
+  # REDIS_URL points at mfe-pot-platform's charts/session-cache release --
+  # a third, separate cross-Helm-release in-cluster Service, same kind of
+  # traffic as the two BFF URLs above.
   env:
     HOST: "0.0.0.0"
     PORT: "3004"
     JOB_BANK_BFF_URL: "http://job-bank-bff.default.svc.cluster.local:3001"
     EMPLOYMENT_INSURANCE_BFF_URL: "http://employment-insurance-bff.default.svc.cluster.local:3002"
-    CLIENT_PROFILE_SERVICE_URL: "http://client-profile-service.default.svc.cluster.local:3003"
+    REDIS_URL: "redis://session-cache.default.svc.cluster.local:6379"
 
 ingress:
   host: dashboard.mfe-pot.local

@@ -23,6 +23,7 @@
     "types": ["node"],
     "paths": {
       "dashboard-feature-payment-history": ["./libs/feature-payment-history/src/index.ts"],
+      "dashboard-feature-overview": ["./libs/feature-overview/src/index.ts"],
       "dashboard-data-access": ["./libs/data-access/src/index.ts"]
     }
   },

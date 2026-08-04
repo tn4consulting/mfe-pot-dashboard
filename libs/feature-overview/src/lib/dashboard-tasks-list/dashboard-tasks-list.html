@@ -1,0 +1,15 @@
+<section class="tasks-list">
+  <gcds-heading tag="h2" id="tasks-heading">My Tasks</gcds-heading>
+  @if (tasks; as data) {
+    @if (data.status === 'ok') {
+      <scds-multi-column-list
+        [items]="data.data"
+        [columns]="columns"
+        listLabel="My Tasks"
+        emptyLabel="No outstanding tasks."
+      />
+    } @else {
+      <p role="alert">Tasks are temporarily unavailable.</p>
+    }
+  }
+</section>

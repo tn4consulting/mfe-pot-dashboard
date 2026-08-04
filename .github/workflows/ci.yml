@@ -43,13 +43,13 @@ jobs:
       - name: Lint, test, build
         run: pnpm exec nx run-many -t lint,test,build --all
 
-      # benefit-aggregation-bff's lint target is inferred as
+      # dashboard-bff's lint target is inferred as
       # `eslint:lint`, not `lint` (the @nx/node generator doesn't add an
       # explicit `lint` target the way the Angular app does) -- see
       # CLAUDE.md's "Backends: BFF pattern" section. `nx run-many -t
       # lint` above silently skips it.
-      - name: Lint benefit-aggregation-bff
-        run: pnpm exec nx run benefit-aggregation-bff:eslint:lint
+      - name: Lint dashboard-bff
+        run: pnpm exec nx run dashboard-bff:eslint:lint
 
   # Stage 2: build both images, deploy this app's own Helm chart to an
   # ephemeral kind cluster, and confirm it actually serves -- the
@@ -57,10 +57,10 @@ jobs:
   # automated instead of the one-off manual run it started as.
   #
   # Note: this is a single-app-repo deploy, not the full cluster. dashboard's
-  # own chart deploys cleanly on its own, but benefit-aggregation-bff's
-  # calls to job-bank-bff/employment-insurance-bff/client-profile-service
-  # (real in-cluster Service DNS -- see CLAUDE.md) have nothing to resolve
-  # here, since this workflow doesn't also deploy those other apps' charts.
+  # own chart deploys cleanly on its own, but dashboard-bff's calls to
+  # job-bank-bff/employment-insurance-bff (real in-cluster Service DNS --
+  # see CLAUDE.md) have nothing to resolve here, since this workflow doesn't
+  # also deploy those other apps' charts.
   # That's fine for this stage's purpose (proving *this* image/chart pair
   # builds, deploys, and serves) -- the /api/overview smoke check below
   # deliberately avoids depending on those upstreams being reachable.
@@ -96,12 +96,12 @@ jobs:
           secrets: |
             npm_token=${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build benefit-aggregation-bff image
+      - name: Build dashboard-bff image
         uses: docker/build-push-action@v6
         with:
           context: mfe-pot-dashboard
-          file: mfe-pot-dashboard/apps/benefit-aggregation-bff/Dockerfile
-          tags: mfe-pot-benefit-aggregation-bff:kind
+          file: mfe-pot-dashboard/apps/dashboard-bff/Dockerfile
+          tags: mfe-pot-dashboard-bff:kind
           load: true
           secrets: |
             npm_token=${{ secrets.GITHUB_TOKEN }}
@@ -130,7 +130,7 @@ jobs:
       - name: Load images into kind
         run: |
           kind load docker-image mfe-pot-dashboard:kind
-          kind load docker-image mfe-pot-benefit-aggregation-bff:kind
+          kind load docker-image mfe-pot-dashboard-bff:kind
 
       - uses: azure/setup-helm@v4
 
@@ -151,9 +151,8 @@ jobs:
       # /api/overview with no `sub` query param deliberately -- asserts a
       # real 400 validation-error response (not a 404), proving the
       # request actually reached the Express app without depending on
-      # job-bank-bff/employment-insurance-bff/client-profile-service
-      # being deployed in this single-app workflow (see the job comment
-      # above).
+      # job-bank-bff/employment-insurance-bff being deployed in this
+      # single-app workflow (see the job comment above).
       - name: Verify the deployed app is actually reachable
         run: |
           set -eu
@@ -166,6 +165,6 @@ jobs:
             sleep 2
           done
           curl -sf -H "Host: dashboard.mfe-pot.local" http://localhost/ | grep -qi '<script src="env.js">'
-          curl -sf -H "Host: dashboard.mfe-pot.local" http://localhost/env.js | grep -q '"benefitAggregationBffBaseUrl":"/api"'
+          curl -sf -H "Host: dashboard.mfe-pot.local" http://localhost/env.js | grep -q '"dashboardBffBaseUrl":""'
           status=$(curl -s -o /dev/null -w '%{http_code}' -H "Host: dashboard.mfe-pot.local" "http://localhost/api/overview")
           [ "$status" = "400" ]

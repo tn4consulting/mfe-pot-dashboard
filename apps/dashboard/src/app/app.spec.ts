@@ -19,6 +19,8 @@ const emptyOverview: BenefitOverview = {
   tasks: { status: 'ok', data: [] },
   payments: { status: 'ok', data: [] },
   correspondence: { status: 'ok', data: [] },
+  eiReportingStatus: { status: 'ok', data: null },
+  jobApplications: { status: 'ok', data: [] },
 };
 
 describe('App', () => {
@@ -121,44 +123,48 @@ describe('App', () => {
     );
   });
 
-  it('renders active applications from the benefit-aggregation-bff overview', async () => {
+  it('passes the fetched overview down to the feature-overview widget', async () => {
+    // Widget-loading behaviour (job applications / EI reporting status) is
+    // covered by dashboard-feature-overview's own spec, which can await the
+    // child component's ngOnInit directly -- this app-level test only
+    // checks that App actually wires its fetched benefitOverview down via
+    // @Input, using My Tasks as the observable proof. My Tasks renders via
+    // scds-multi-column-list, a custom element whose shadow-DOM render
+    // happens on its own tick outside Angular's change detection and isn't
+    // reachable via the host's plain textContent -- hence the extra wait
+    // and the shadowRoot query.
     global.fetch = jest.fn().mockResolvedValue({
       ok: true,
       json: async () => ({ data: [] }),
     }) as unknown as typeof fetch;
     benefitOverviewApiClient.getOverview.mockResolvedValue({
       ...emptyOverview,
-      activeApplications: {
-        status: 'ok',
-        data: [{ type: 'job', id: 'app-1', summary: 'Application for job-001', status: 'submitted' }],
-      },
+      tasks: { status: 'ok', data: ['Submit your next EI report'] },
     });
 
     const fixture = TestBed.createComponent(App);
     await fixture.componentInstance.ngOnInit();
     fixture.detectChanges();
-    const compiled = fixture.nativeElement as HTMLElement;
-    expect(compiled.textContent).toContain('Application for job-001');
+    await new Promise((resolve) => setTimeout(resolve, 20));
+    const list = (fixture.nativeElement as HTMLElement).querySelector('scds-multi-column-list');
+    expect(list?.shadowRoot?.textContent).toContain('Submit your next EI report');
   });
 
-  it('degrades only the active-applications tile when that part of the overview is unavailable', async () => {
+  it('degrades gracefully when a benefit-specific tile is unavailable', async () => {
     global.fetch = jest.fn().mockResolvedValue({
       ok: true,
       json: async () => ({ data: [] }),
     }) as unknown as typeof fetch;
     benefitOverviewApiClient.getOverview.mockResolvedValue({
       ...emptyOverview,
-      activeApplications: { status: 'unavailable' },
+      tasks: { status: 'unavailable' },
     });
 
     const fixture = TestBed.createComponent(App);
     await fixture.componentInstance.ngOnInit();
     fixture.detectChanges();
     const compiled = fixture.nativeElement as HTMLElement;
-    expect(compiled.querySelector('#active-applications-heading')).not.toBeNull();
-    expect(compiled.textContent).toContain('Active applications are temporarily unavailable');
-    // The rest of the page is unaffected by that one tile degrading.
-    expect(compiled.querySelector('#tasks-heading')).not.toBeNull();
+    expect(compiled.textContent).toContain('Tasks are temporarily unavailable');
   });
 
   it('blocks its own content when there is no active session, independent of the shell', async () => {

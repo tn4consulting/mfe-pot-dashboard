@@ -1,7 +1,7 @@
 import { BenefitOverviewApiClient } from './benefit-overview-api-client';
 import { BenefitOverview } from './models';
 
-/** Local dev / integration tests: calls the real benefit-aggregation-bff over HTTP. */
+/** Local dev / integration tests: calls the real dashboard-bff over HTTP. */
 export class HttpBenefitOverviewApiClient implements BenefitOverviewApiClient {
   constructor(private readonly baseUrl: string) {}
 
@@ -10,7 +10,7 @@ export class HttpBenefitOverviewApiClient implements BenefitOverviewApiClient {
     url.searchParams.set('sub', sub);
     const response = await fetch(url);
     if (!response.ok) {
-      throw new Error(`benefit-aggregation-bff returned ${response.status} for /api/overview`);
+      throw new Error(`dashboard-bff returned ${response.status} for /api/overview`);
     }
     return (await response.json()) as BenefitOverview;
   }
