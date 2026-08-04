@@ -57,10 +57,10 @@ jobs:
   # automated instead of the one-off manual run it started as.
   #
   # Note: this is a single-app-repo deploy, not the full cluster. dashboard's
-  # own chart deploys cleanly on its own, but dashboard-bff's
-  # calls to job-bank-bff/employment-insurance-bff/client-profile-service
-  # (real in-cluster Service DNS -- see CLAUDE.md) have nothing to resolve
-  # here, since this workflow doesn't also deploy those other apps' charts.
+  # own chart deploys cleanly on its own, but dashboard-bff's calls to
+  # job-bank-bff/employment-insurance-bff (real in-cluster Service DNS --
+  # see CLAUDE.md) have nothing to resolve here, since this workflow doesn't
+  # also deploy those other apps' charts.
   # That's fine for this stage's purpose (proving *this* image/chart pair
   # builds, deploys, and serves) -- the /api/overview smoke check below
   # deliberately avoids depending on those upstreams being reachable.
@@ -151,9 +151,8 @@ jobs:
       # /api/overview with no `sub` query param deliberately -- asserts a
       # real 400 validation-error response (not a 404), proving the
       # request actually reached the Express app without depending on
-      # job-bank-bff/employment-insurance-bff/client-profile-service
-      # being deployed in this single-app workflow (see the job comment
-      # above).
+      # job-bank-bff/employment-insurance-bff being deployed in this
+      # single-app workflow (see the job comment above).
       - name: Verify the deployed app is actually reachable
         run: |
           set -eu

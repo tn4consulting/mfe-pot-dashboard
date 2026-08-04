@@ -38,11 +38,12 @@ pnpm exec nx serve dashboard-bff   # terminal 1 — port 3004
 pnpm exec nx serve dashboard       # terminal 2 — port 4201
 ```
 
-Open `http://localhost:4201`. `dashboard-bff` fans out to `job-bank-bff`,
-`employment-insurance-bff`, and `client-profile-service` for the overview
-tiles — without them running, those tiles degrade to "unavailable" rather
-than erroring (see `CLAUDE.md`'s partial-failure contract). Run the whole
-family via the platform repo's README for the full cross-benefit picture.
+Open `http://localhost:4201`. `dashboard-bff` fans out to `job-bank-bff` and
+`employment-insurance-bff` for the overview tiles — without them running,
+those tiles degrade to "unavailable" rather than erroring (see `CLAUDE.md`'s
+partial-failure contract). Payments/correspondence are always real,
+served from `dashboard-bff`'s own local data. Run the whole family via the
+platform repo's README for the full cross-benefit picture.
 
 ## Test, lint, build
 

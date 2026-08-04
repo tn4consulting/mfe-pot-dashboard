@@ -1,15 +1,14 @@
 import cors from 'cors';
 import express, { Express } from 'express';
 import { getBenefitOverview } from './overview';
-import { getPayments } from './payments';
+import { getPayments } from './data';
 
 /**
- * MSCA-D's own BFF: composes the cross-benefit overview and proxies the
- * standalone payment-history widget by calling job-bank-bff,
- * employment-insurance-bff, and client-profile-service over real HTTP --
- * see overview.ts/payments.ts and CLAUDE.md's "Backends: BFF pattern"
- * section. client-profile-service is BFF-only: no frontend calls it
- * directly, this is the one hop in front of it for payment history.
+ * MSCA-D's own BFF: composes the cross-benefit overview by calling
+ * job-bank-bff/employment-insurance-bff over real HTTP and its own local
+ * payments/correspondence data (`data.ts`) -- the same in-memory-stub
+ * pattern job-bank-bff/employment-insurance-bff use for their own domains.
+ * See overview.ts and CLAUDE.md's "Backends: BFF pattern" section.
  */
 export function createApp(): Express {
   const app = express();
@@ -28,17 +27,13 @@ export function createApp(): Express {
     res.json(await getBenefitOverview(sub));
   });
 
-  app.get('/api/payments', async (req, res) => {
+  app.get('/api/payments', (req, res) => {
     const sub = req.query['sub'];
     if (typeof sub !== 'string') {
       res.status(400).json({ error: 'sub query parameter is required' });
       return;
     }
-    try {
-      res.json(await getPayments(sub));
-    } catch {
-      res.status(502).json({ error: 'payment history is temporarily unavailable' });
-    }
+    res.json(getPayments(sub));
   });
 
   return app;

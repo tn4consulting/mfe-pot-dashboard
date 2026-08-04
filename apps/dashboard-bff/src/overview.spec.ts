@@ -34,12 +34,6 @@ describe('getBenefitOverview', () => {
       if (href.includes('/api/claims')) {
         return jsonResponse({ id: 'claim-1', status: 'approved', weeklyBenefitAmount: 638 });
       }
-      if (href.includes('/payments')) {
-        return jsonResponse([{ id: 'pay-1', date: '2026-07-15', benefit: 'EI', program: 'EI', status: 'pending', amount: 638 }]);
-      }
-      if (href.includes('/correspondence')) {
-        return jsonResponse([{ id: 'corr-1', date: '2026-07-10', subject: 'Approved' }]);
-      }
       throw new Error(`Unexpected URL in test: ${href}`);
     }) as unknown as typeof fetch;
 
@@ -54,8 +48,34 @@ describe('getBenefitOverview', () => {
       ],
     });
     expect(overview.tasks).toEqual({ status: 'ok', data: ['Submit your next EI report'] });
-    expect(overview.payments.status).toBe('ok');
-    expect(overview.correspondence.status).toBe('ok');
+    expect(overview.payments).toEqual({
+      status: 'ok',
+      data: [
+        {
+          id: 'pay-001',
+          date: '2026-07-15',
+          benefit: 'Employment Insurance',
+          program: 'EI',
+          status: 'pending',
+          amount: 638.0,
+        },
+        {
+          id: 'pay-002',
+          date: '2026-07-01',
+          benefit: 'Employment Insurance',
+          program: 'EI',
+          status: 'complete',
+          amount: 638.0,
+        },
+      ],
+    });
+    expect(overview.correspondence).toEqual({
+      status: 'ok',
+      data: [
+        { id: 'corr-001', date: '2026-07-10', subject: 'Your EI application has been approved' },
+        { id: 'corr-002', date: '2026-06-28', subject: 'We received your EI application' },
+      ],
+    });
     expect(overview.eiReportingStatus).toEqual({
       status: 'ok',
       data: {
@@ -124,29 +144,6 @@ describe('getBenefitOverview', () => {
       status: 'ok',
       data: ['Your EI report is overdue — submit it as soon as possible'],
     });
-  });
-
-  it('degrades only the affected tile when client-profile-service is unreachable', async () => {
-    global.fetch = jest.fn(async (url: string | URL | Request) => {
-      const href = url.toString();
-      if (href.includes('/payments') || href.includes('/correspondence')) {
-        throw new Error('connection refused');
-      }
-      if (href.includes('/api/claims') || href.includes('/api/reporting-status')) {
-        return jsonResponse({ error: 'not found' }, 404);
-      }
-      return jsonResponse([]);
-    }) as unknown as typeof fetch;
-
-    const overview = await getBenefitOverview('mock-citizen-001');
-
-    expect(overview.payments).toEqual({ status: 'unavailable' });
-    expect(overview.correspondence).toEqual({ status: 'unavailable' });
-    // The rest of the response is unaffected -- this is the whole point of
-    // the partial-failure contract.
-    expect(overview.eligibleBenefits.status).toBe('ok');
-    expect(overview.activeApplications.status).toBe('ok');
-    expect(overview.tasks.status).toBe('ok');
   });
 
   it('marks activeApplications unavailable when job-bank-bff fails, without affecting other tiles', async () => {

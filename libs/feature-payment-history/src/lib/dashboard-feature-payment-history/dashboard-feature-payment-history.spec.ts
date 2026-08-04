@@ -18,7 +18,7 @@ describe('DashboardFeaturePaymentHistory', () => {
     }).compileComponents();
   }
 
-  it('renders payments fetched from client-profile-service', async () => {
+  it('renders payments fetched from dashboard-bff', async () => {
     storeSession(createMockSession());
     apiClient.getPayments.mockResolvedValue([
       {

@@ -19,12 +19,7 @@ frontend:
   # is browser-to-server (ContentClient fetches Strapi directly from the
   # end user's browser, same as shell's federation-manifest fetch), so a
   # cluster-internal name would never resolve there even once the chart
-  # existed. No clientProfileServiceBaseUrl here on purpose:
-  # client-profile-service is BFF-only (see backend.env below) --
-  # HttpPaymentHistoryApiClient now goes through dashboard-bff's
-  # /api/payments proxy instead of calling it directly from the browser,
-  # which is also the only URL for it that could ever resolve here (its
-  # real address is an in-cluster Service DNS name, not a public hostname).
+  # existed.
   runtimeConfig:
     dashboardBffBaseUrl: ""
     strapiBaseUrl: "http://cms.mfe-pot.local"
@@ -42,18 +37,15 @@ backend:
   # Helm releases' in-cluster Services (job-bank-bff, employment-insurance-bff
   # -- each already a Deployment+Service pair from its own extracted
   # repo's chart), not their public Ingress hostnames -- this is genuine
-  # cluster-internal service-to-service traffic. CLIENT_PROFILE_SERVICE_URL
-  # has no deployed Service yet (see frontend.runtimeConfig comment above) --
-  # payments.ts's fetch to it fails until that chart exists, returning a 502
-  # from /api/payments (frontend shows the "temporarily unavailable" error
-  # state), and /api/overview's payments/correspondence tiles keep degrading
-  # gracefully per overview.ts's existing partial-failure contract.
+  # cluster-internal service-to-service traffic. Payments/correspondence are
+  # served from dashboard-bff's own local data (data.ts), so /api/payments
+  # and /api/overview's payments/correspondence tiles no longer depend on
+  # any upstream being deployed.
   env:
     HOST: "0.0.0.0"
     PORT: "3004"
     JOB_BANK_BFF_URL: "http://job-bank-bff.default.svc.cluster.local:3001"
     EMPLOYMENT_INSURANCE_BFF_URL: "http://employment-insurance-bff.default.svc.cluster.local:3002"
-    CLIENT_PROFILE_SERVICE_URL: "http://client-profile-service.default.svc.cluster.local:3003"
 
 ingress:
   host: dashboard.mfe-pot.local

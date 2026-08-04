@@ -1,4 +1,5 @@
 import { upstreams } from './config';
+import { CorrespondenceItem, Payment, getCorrespondence, getPayments } from './data';
 import { fetchJson, UpstreamResult } from './upstream';
 
 interface JobApplication {
@@ -27,21 +28,6 @@ export interface EiReportingStatus {
   nextReportDue: string;
   daysUntilDue: number;
   status: EiReportingStatusLabel;
-}
-
-interface Payment {
-  id: string;
-  date: string;
-  benefit: string;
-  program: string;
-  status: 'pending' | 'complete';
-  amount: number;
-}
-
-interface CorrespondenceItem {
-  id: string;
-  date: string;
-  subject: string;
 }
 
 export interface ActiveApplication {
@@ -181,13 +167,7 @@ async function getEiReportingStatus(sub: string): Promise<UpstreamResult<EiRepor
 }
 
 export async function getBenefitOverview(sub: string): Promise<BenefitOverview> {
-  const [payments, correspondence, claim, jobApplications, eiReportingStatus] = await Promise.all([
-    fetchJson<Payment[]>(
-      `${upstreams.clientProfileServiceUrl}/api/profile/${encodeURIComponent(sub)}/payments`,
-    ),
-    fetchJson<CorrespondenceItem[]>(
-      `${upstreams.clientProfileServiceUrl}/api/profile/${encodeURIComponent(sub)}/correspondence`,
-    ),
+  const [claim, jobApplications, eiReportingStatus] = await Promise.all([
     getEiClaim(sub),
     fetchJson<JobApplicationView[]>(
       `${upstreams.jobBankBffUrl}/api/applications?applicantSub=${encodeURIComponent(sub)}`,
@@ -202,8 +182,10 @@ export async function getBenefitOverview(sub: string): Promise<BenefitOverview> 
       claim.status === 'ok' ? claim.data : null,
       eiReportingStatus.status === 'ok' ? eiReportingStatus.data : null,
     ),
-    payments,
-    correspondence,
+    // Local data -- can't fail, so always 'ok', unlike the job-bank-bff/
+    // employment-insurance-bff-sourced tiles above.
+    payments: { status: 'ok', data: getPayments(sub) },
+    correspondence: { status: 'ok', data: getCorrespondence(sub) },
     eiReportingStatus,
     jobApplications,
   };
