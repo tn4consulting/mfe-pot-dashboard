@@ -1,4 +1,4 @@
-import { clearSession, storeSession } from '@tn4consulting/shared-auth';
+import { clearSession, storeSession } from '@tn4consulting/shared-auth/core';
 import { HttpBenefitOverviewApiClient } from './http-benefit-overview-api-client';
 
 describe('HttpBenefitOverviewApiClient', () => {

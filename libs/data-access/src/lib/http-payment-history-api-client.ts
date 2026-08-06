@@ -1,4 +1,4 @@
-import { getAccessToken } from '@tn4consulting/shared-auth';
+import { getAccessToken } from '@tn4consulting/shared-auth/core';
 import { PaymentHistoryApiClient } from './payment-history-api-client';
 import { Payment } from './models';
 

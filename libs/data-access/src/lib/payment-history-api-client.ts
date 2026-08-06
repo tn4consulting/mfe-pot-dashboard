@@ -1,4 +1,3 @@
-import { InjectionToken } from '@angular/core';
 import { Payment } from './models';
 
 /**
@@ -10,7 +9,3 @@ import { Payment } from './models';
 export interface PaymentHistoryApiClient {
   getPayments(sub: string): Promise<Payment[]>;
 }
-
-export const PAYMENT_HISTORY_API_CLIENT = new InjectionToken<PaymentHistoryApiClient>(
-  'PAYMENT_HISTORY_API_CLIENT',
-);

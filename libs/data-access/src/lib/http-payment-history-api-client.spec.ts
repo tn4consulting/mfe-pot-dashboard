@@ -1,4 +1,4 @@
-import { clearSession, storeSession } from '@tn4consulting/shared-auth';
+import { clearSession, storeSession } from '@tn4consulting/shared-auth/core';
 import { HttpPaymentHistoryApiClient } from './http-payment-history-api-client';
 
 describe('HttpPaymentHistoryApiClient', () => {

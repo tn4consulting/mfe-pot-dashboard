@@ -1,8 +1,0 @@
-<section class="whats-new-list">
-  <gcds-heading tag="h2" id="whats-new-heading">What's New</gcds-heading>
-  @for (item of items; track item.id) {
-    <gcds-notice [noticeTitle]="text(item.title)" noticeRole="info" noticeTitleTag="h3">
-      {{ text(item.body) }}
-    </gcds-notice>
-  }
-</section>

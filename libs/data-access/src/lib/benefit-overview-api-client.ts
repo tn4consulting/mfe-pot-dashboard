@@ -1,4 +1,3 @@
-import { InjectionToken } from '@angular/core';
 import { BenefitOverview } from './models';
 
 /**
@@ -12,7 +11,3 @@ import { BenefitOverview } from './models';
 export interface BenefitOverviewApiClient {
   getOverview(sub: string): Promise<BenefitOverview>;
 }
-
-export const BENEFIT_OVERVIEW_API_CLIENT = new InjectionToken<BenefitOverviewApiClient>(
-  'BENEFIT_OVERVIEW_API_CLIENT',
-);

@@ -1,4 +1,4 @@
-import { getAccessToken } from '@tn4consulting/shared-auth';
+import { getAccessToken } from '@tn4consulting/shared-auth/core';
 import { BenefitOverviewApiClient } from './benefit-overview-api-client';
 import { BenefitOverview } from './models';
 
