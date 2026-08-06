@@ -45,7 +45,7 @@ export function App() {
       }
       setConfig({
         benefitOverviewApiClient: new HttpBenefitOverviewApiClient(runtimeConfig.dashboardBffBaseUrl),
-        contentClient: createContentClient(runtimeConfig.strapiBaseUrl),
+        contentClient: createContentClient(runtimeConfig.strapiBaseUrl, assetBaseUrl),
       });
     });
     return () => {

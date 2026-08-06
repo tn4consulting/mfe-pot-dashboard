@@ -3,8 +3,11 @@
 import * as React from 'react';
 import { useEffect, useState } from 'react';
 import { getStoredSession } from '@tn4consulting/shared-auth/core';
+import type { ContentClient, PageContent } from '@tn4consulting/shared-content-client';
+import { useLocale } from '@tn4consulting/shared-i18n';
 import type { Payment, PaymentHistoryApiClient } from 'dashboard-data-access';
 import { HttpPaymentHistoryApiClient } from 'dashboard-data-access';
+import { createContentClient, PAYMENT_HISTORY_CONTENT_KEYS } from './content-client';
 import { loadRuntimeConfig } from '../runtime-config';
 import { assetBaseUrl } from './asset-base-url';
 
@@ -19,20 +22,51 @@ import { assetBaseUrl } from './asset-base-url';
  */
 export function DashboardFeaturePaymentHistory() {
   const [apiClient, setApiClient] = useState<PaymentHistoryApiClient | null>(null);
+  const [contentClient, setContentClient] = useState<ContentClient | null>(null);
+  const [content, setContent] = useState<Record<string, PageContent>>({});
   const [payments, setPayments] = useState<Payment[]>([]);
   const [loadError, setLoadError] = useState(false);
+  const locale = useLocale();
+
+  function label(key: (typeof PAYMENT_HISTORY_CONTENT_KEYS)[number]): string {
+    return content[key]?.title ?? key;
+  }
 
   useEffect(() => {
     let cancelled = false;
     loadRuntimeConfig(assetBaseUrl).then((runtimeConfig) => {
       if (!cancelled) {
         setApiClient(new HttpPaymentHistoryApiClient(runtimeConfig.dashboardBffBaseUrl));
+        setContentClient(createContentClient(runtimeConfig.strapiBaseUrl, assetBaseUrl));
       }
     });
     return () => {
       cancelled = true;
     };
   }, []);
+
+  // CMS content isn't reactive by default, so this widget explicitly
+  // re-fetches whenever the cross-remote active locale changes -- same
+  // pattern as every app's own intro block.
+  useEffect(() => {
+    if (!contentClient) {
+      return;
+    }
+    let cancelled = false;
+    contentClient
+      .getPageContents([...PAYMENT_HISTORY_CONTENT_KEYS], locale === 'fr' ? 'fr' : 'en')
+      .then((result) => {
+        if (!cancelled) {
+          setContent(result);
+        }
+      })
+      .catch((err) => {
+        console.error('Failed to load payment history content', err);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [contentClient, locale]);
 
   useEffect(() => {
     if (!apiClient) {
@@ -64,18 +98,18 @@ export function DashboardFeaturePaymentHistory() {
 
   return (
     <section className="payment-history-widget">
-      <gcds-heading tag="h2">Payment history</gcds-heading>
+      <gcds-heading tag="h2">{label('dashboard.payment-history.heading')}</gcds-heading>
       {loadError ? (
-        <p role="alert">Payment history is temporarily unavailable.</p>
+        <p role="alert">{label('dashboard.payment-history.error')}</p>
       ) : (
         <table>
-          <caption className="visually-hidden">Payment history</caption>
+          <caption className="visually-hidden">{label('dashboard.payment-history.heading')}</caption>
           <thead>
             <tr>
-              <th scope="col">Program</th>
-              <th scope="col">Status</th>
-              <th scope="col">Date</th>
-              <th scope="col">Amount</th>
+              <th scope="col">{label('dashboard.payment-history.table.program')}</th>
+              <th scope="col">{label('dashboard.payment-history.table.status')}</th>
+              <th scope="col">{label('dashboard.payment-history.table.date')}</th>
+              <th scope="col">{label('dashboard.payment-history.table.amount')}</th>
             </tr>
           </thead>
           <tbody>
@@ -84,7 +118,9 @@ export function DashboardFeaturePaymentHistory() {
                 <td>{payment.benefit}</td>
                 <td>
                   <span className={`status-pill${payment.status === 'complete' ? ' status-pill--complete' : ''}`}>
-                    {payment.status === 'complete' ? 'Complete' : 'Pending'}
+                    {payment.status === 'complete'
+                      ? label('dashboard.payment-history.status.complete')
+                      : label('dashboard.payment-history.status.pending')}
                   </span>
                 </td>
                 <td>{payment.date}</td>

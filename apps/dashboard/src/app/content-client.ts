@@ -1,30 +1,29 @@
 import {
   ContentClient,
-  PageContent,
+  FallbackContentClient,
   StaticContentClient,
   StrapiContentClient,
 } from '@tn4consulting/shared-content-client';
 
 export const OVERVIEW_CONTENT_KEY = 'dashboard.overview.intro';
 
-// Baked fallback for the Firebase-hosted build (no live CMS there) -- kept
-// in sync with the seed data in tools/cms/strapi/src/index.ts by hand for
-// now; a build step to export this automatically is a natural follow-up.
-const STATIC_CONTENT: Record<string, Record<'en' | 'fr', PageContent>> = {
-  [OVERVIEW_CONTENT_KEY]: {
-    en: {
-      key: OVERVIEW_CONTENT_KEY,
-      title: 'Welcome to your account',
-      body: 'Here is an overview of your benefits, payments, and tasks.',
-    },
-    fr: {
-      key: OVERVIEW_CONTENT_KEY,
-      title: 'Bienvenue dans votre compte',
-      body: 'Voici un aperçu de vos prestations, paiements et tâches.',
-    },
-  },
-};
+export const PAYMENT_HISTORY_CONTENT_KEYS = [
+  'dashboard.payment-history.heading',
+  'dashboard.payment-history.table.program',
+  'dashboard.payment-history.table.status',
+  'dashboard.payment-history.table.date',
+  'dashboard.payment-history.table.amount',
+  'dashboard.payment-history.status.complete',
+  'dashboard.payment-history.status.pending',
+  'dashboard.payment-history.error',
+] as const;
 
-export function createContentClient(strapiBaseUrl: string | undefined): ContentClient {
-  return strapiBaseUrl ? new StrapiContentClient(strapiBaseUrl) : new StaticContentClient(STATIC_CONTENT);
+/**
+ * No CMS configured -> the bilingual fallback (`public/assets/content-fallback/<locale>.json`)
+ * directly. CMS configured -> Strapi as primary, same fallback backing it up
+ * if Strapi is unreachable/missing a key at runtime -- see `FallbackContentClient`.
+ */
+export function createContentClient(strapiBaseUrl: string | undefined, assetBaseUrl: string): ContentClient {
+  const fallback = new StaticContentClient(assetBaseUrl);
+  return strapiBaseUrl ? new FallbackContentClient(new StrapiContentClient(strapiBaseUrl), fallback) : fallback;
 }

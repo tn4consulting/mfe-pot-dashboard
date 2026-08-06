@@ -1,0 +1,14 @@
+{
+  "dashboard.overview.intro": {
+    "title": "Bienvenue dans votre compte",
+    "body": "Voici un aperçu de vos prestations, paiements et tâches."
+  },
+  "dashboard.payment-history.heading": { "title": "Historique des paiements", "body": "" },
+  "dashboard.payment-history.table.program": { "title": "Programme", "body": "" },
+  "dashboard.payment-history.table.status": { "title": "État", "body": "" },
+  "dashboard.payment-history.table.date": { "title": "Date", "body": "" },
+  "dashboard.payment-history.table.amount": { "title": "Montant", "body": "" },
+  "dashboard.payment-history.status.complete": { "title": "Terminé", "body": "" },
+  "dashboard.payment-history.status.pending": { "title": "En attente", "body": "" },
+  "dashboard.payment-history.error": { "title": "L'historique des paiements est temporairement indisponible.", "body": "" }
+}

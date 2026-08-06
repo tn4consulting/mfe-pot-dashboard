@@ -11,9 +11,20 @@ jest.mock('../runtime-config', () => ({
 }));
 
 const getPageContentMock = jest.fn();
+const getPageContentsMock = jest.fn();
 jest.mock('./content-client', () => ({
   OVERVIEW_CONTENT_KEY: 'dashboard.overview.intro',
-  createContentClient: () => ({ getPageContent: getPageContentMock }),
+  PAYMENT_HISTORY_CONTENT_KEYS: [
+    'dashboard.payment-history.heading',
+    'dashboard.payment-history.table.program',
+    'dashboard.payment-history.table.status',
+    'dashboard.payment-history.table.date',
+    'dashboard.payment-history.table.amount',
+    'dashboard.payment-history.status.complete',
+    'dashboard.payment-history.status.pending',
+    'dashboard.payment-history.error',
+  ],
+  createContentClient: () => ({ getPageContent: getPageContentMock, getPageContents: getPageContentsMock }),
 }));
 
 jest.mock('@tn4consulting/shared-federation-runtime', () => ({
@@ -24,7 +35,28 @@ jest.mock('@tn4consulting/shared-federation-runtime', () => ({
 describe('App', () => {
   beforeEach(() => {
     getPageContentMock.mockReset().mockResolvedValue(null);
-    global.fetch = jest.fn().mockResolvedValue({ ok: false, status: 404 }) as unknown as typeof fetch;
+    getPageContentsMock.mockReset().mockResolvedValue({
+      'dashboard.payment-history.heading': { title: 'Payment history', body: '' },
+      'dashboard.payment-history.table.program': { title: 'Program', body: '' },
+      'dashboard.payment-history.table.status': { title: 'Status', body: '' },
+      'dashboard.payment-history.table.date': { title: 'Date', body: '' },
+      'dashboard.payment-history.table.amount': { title: 'Amount', body: '' },
+      'dashboard.payment-history.status.complete': { title: 'Complete', body: '' },
+      'dashboard.payment-history.status.pending': { title: 'Pending', body: '' },
+      'dashboard.payment-history.error': { title: 'Payment history is temporarily unavailable.', body: '' },
+    });
+    global.fetch = jest.fn((url: RequestInfo | URL) => {
+      if (url.toString().includes('/api/payments')) {
+        return Promise.resolve({
+          ok: true,
+          json: () =>
+            Promise.resolve([
+              { id: 'pay-1', date: '2026-07-15', benefit: 'EI', program: 'ei', status: 'complete', amount: 638 },
+            ]),
+        } as Response);
+      }
+      return Promise.resolve({ ok: false, status: 404 } as Response);
+    }) as unknown as typeof fetch;
   });
 
   afterEach(() => {
@@ -41,7 +73,11 @@ describe('App', () => {
     // implicit heading role -- match on its text content instead, same
     // pattern used for scds-card elsewhere in this family's specs.
     expect(await screen.findByText('Hello, Jordan Tremblay')).toBeInTheDocument();
-    expect(screen.getByText('Program')).toBeInTheDocument();
+    // Payment-history's table labels come from an async ContentClient fetch
+    // (even the fallback path is a Promise, per StaticContentClient), so
+    // this needs an awaiting query, not a synchronous one -- same reason
+    // the intro-content test below uses findByRole rather than getByRole.
+    expect(await screen.findByText('Program')).toBeInTheDocument();
   });
 
   it('renders intro content fetched via ContentClient', async () => {
