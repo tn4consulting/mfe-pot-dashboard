@@ -1,1 +1,57 @@
 /* You can add global styles to this file, and also import other style files */
+
+/* Every scds-* component's shadow CSS reads --scds-* custom properties
+   (defined here, not per-component) -- this app previously imported no
+   global stylesheet at all (a pre-existing gap: it silently relied on the
+   shell having already loaded GCDS's own global CSS when composed, so it
+   rendered unstyled when served standalone). Every app that renders SCDS
+   elements needs this import for itself now. */
+@import '@tn4consulting/shared-ui-scds-core/dist/scds/scds.css';
+
+body {
+  margin: 0;
+  font-family: var(--scds-font-family);
+  color: var(--scds-color-text);
+  background: var(--scds-color-gray-50);
+}
+
+.dashboard-overview {
+  display: flex;
+  flex-direction: column;
+  gap: var(--scds-space-6);
+  padding-block: var(--scds-space-5);
+}
+
+.dashboard-overview__heading-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--scds-space-3);
+}
+
+.dashboard-overview__heading-row .today {
+  color: var(--scds-color-text-muted);
+  margin: 0;
+}
+
+.dashboard-overview__grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--scds-space-5);
+  align-items: start;
+}
+
+.needs-attention-list,
+.whats-new-list,
+.consider-this-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--scds-space-3);
+}
+
+@media (max-width: 47.9375em) {
+  .dashboard-overview__grid {
+    grid-template-columns: 1fr;
+  }
+}

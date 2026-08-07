@@ -49,10 +49,16 @@ describe('DashboardFeaturePaymentHistory', () => {
       } as Response),
     );
 
-    render(<DashboardFeaturePaymentHistory />);
+    const { container } = render(<DashboardFeaturePaymentHistory />);
 
     expect(await screen.findByText('EI')).toBeInTheDocument();
-    expect(screen.getByText('Complete')).toBeInTheDocument();
+    // scds-badge is an unregistered custom element in this test
+    // environment -- its `label`/`tone` props land as plain attributes
+    // (no shadow DOM to render `label` as visible text), same pattern used
+    // for scds-card/scds-notice elsewhere in this family's specs.
+    const badge = container.querySelector('scds-badge');
+    expect(badge?.getAttribute('label')).toBe('Complete');
+    expect(badge?.getAttribute('tone')).toBe('success');
     expect(screen.getByText('$638.00')).toBeInTheDocument();
   });
 

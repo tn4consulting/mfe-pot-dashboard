@@ -13,6 +13,7 @@ import { WhatsNewList } from './WhatsNewList';
 import { NeedsAttentionList } from './NeedsAttentionList';
 import { TasksList } from './TasksList';
 import { ConsiderThisList } from './ConsiderThisList';
+import { DashboardFeaturePaymentHistory } from './PaymentHistory';
 
 /**
  * Composes dashboard's own sections (WhatsNewList/NeedsAttentionList/
@@ -105,26 +106,43 @@ export function Overview({ benefitOverview }: { benefitOverview: BenefitOverview
   }, [loadEiReportingStatusWidget]);
 
   return (
-    <section className="dashboard-overview">
-      <gcds-breadcrumbs hide-canada-link="true">
-        <gcds-breadcrumbs-item href="/">Home</gcds-breadcrumbs-item>
-        <gcds-breadcrumbs-item>Dashboard</gcds-breadcrumbs-item>
-      </gcds-breadcrumbs>
+    <section className="dashboard-overview" style={{ display: 'flex', flexDirection: 'column', gap: 'var(--scds-space-6)', paddingBlock: 'var(--scds-space-5)' }}>
+      <scds-breadcrumbs>
+        <scds-breadcrumbs-item href="/">Home</scds-breadcrumbs-item>
+        <scds-breadcrumbs-item>Dashboard</scds-breadcrumbs-item>
+      </scds-breadcrumbs>
 
-      <gcds-heading tag="h1">{citizenName ? `Hello, ${citizenName}` : 'Hello'}</gcds-heading>
-      <p className="today">{formattedDate}</p>
+      {/* Inline styles, not a stylesheet class, for every layout-critical
+          rule in this file: when this component is federated into the
+          shell (the common case), this app's own styles.css/index.html
+          never load at all -- only this exposed ./Component module does
+          -- so an external className-based rule would silently be dead
+          weight there. Confirmed live: the grid below rendered as a
+          single stacked column, not 2, until this was inlined. Only
+          shadow-DOM-encapsulated scds-* component styles survive
+          federation on their own. */}
+      <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'baseline', justifyContent: 'space-between', gap: 'var(--scds-space-3)' }}>
+        <scds-heading tag="h1">{citizenName ? `Hello, ${citizenName}` : 'Hello'}</scds-heading>
+        <p className="today" style={{ color: 'var(--scds-color-text-muted)', margin: 0 }}>
+          {formattedDate}
+        </p>
+      </div>
 
       <WhatsNewList locale={locale} />
-      <NeedsAttentionList locale={locale} />
+
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(22rem, 1fr))', gap: 'var(--scds-space-5)', alignItems: 'start' }}>
+        <NeedsAttentionList locale={locale} />
+        <DashboardFeaturePaymentHistory />
+      </div>
 
       <TasksList tasks={benefitOverview?.tasks ?? null} />
 
       <section>
         {eiReportingStatusLoadError && (
           <>
-            <gcds-heading tag="h2" id="ei-reporting-heading">
+            <scds-heading tag="h2" id="ei-reporting-heading">
               EI Reporting Status
-            </gcds-heading>
+            </scds-heading>
             <p role="alert">EI reporting status is temporarily unavailable.</p>
           </>
         )}
@@ -134,9 +152,9 @@ export function Overview({ benefitOverview }: { benefitOverview: BenefitOverview
       <section>
         {jobApplicationsLoadError && (
           <>
-            <gcds-heading tag="h2" id="job-applications-heading">
+            <scds-heading tag="h2" id="job-applications-heading">
               My Job Applications
-            </gcds-heading>
+            </scds-heading>
             <p role="alert">Job applications are temporarily unavailable.</p>
           </>
         )}

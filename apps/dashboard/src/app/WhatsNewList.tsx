@@ -37,14 +37,14 @@ function text(value: BilingualText, locale: Locale): string {
 
 export function WhatsNewList({ locale }: { locale: Locale }) {
   return (
-    <section className="whats-new-list">
-      <gcds-heading tag="h2" id="whats-new-heading">
-        What&apos;s New
-      </gcds-heading>
+    <section className="whats-new-list" style={{ display: 'flex', flexDirection: 'column', gap: 'var(--scds-space-3)' }}>
+      <scds-heading tag="h2" id="whats-new-heading">
+        What&apos;s New?
+      </scds-heading>
       {WHATS_NEW.map((item) => (
-        <gcds-notice key={item.id} notice-title={text(item.title, locale)} notice-role="info" notice-title-tag="h3">
+        <scds-notice key={item.id} notice-title={text(item.title, locale)} tone="info" title-tag="h3">
           {text(item.body, locale)}
-        </gcds-notice>
+        </scds-notice>
       ))}
     </section>
   );

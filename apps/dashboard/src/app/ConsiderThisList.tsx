@@ -49,17 +49,17 @@ function text(value: BilingualText, locale: Locale): string {
 
 export function ConsiderThisList({ locale }: { locale: Locale }) {
   return (
-    <section className="consider-this-list">
-      <gcds-heading tag="h2" id="consider-this-heading">
-        Consider This
-      </gcds-heading>
+    <section className="consider-this-list" style={{ display: 'flex', flexDirection: 'column', gap: 'var(--scds-space-3)' }}>
+      <scds-heading tag="h2" id="consider-this-heading">
+        Consider this...
+      </scds-heading>
       {SUGGESTIONS.map((item) => (
         <scds-card key={item.id} card-title={text(item.title, locale)}>
           {text(item.body, locale)}
           <div slot="scdsCardActions">
-            <gcds-button button-role="secondary" size="small">
+            <scds-link href="#" icon-name="arrow-right">
               {text(item.actionLabel, locale)}
-            </gcds-button>
+            </scds-link>
           </div>
         </scds-card>
       ))}

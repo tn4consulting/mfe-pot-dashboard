@@ -40,9 +40,9 @@ export function TasksList({ tasks }: { tasks: UpstreamResult<string[]> | null })
 
   return (
     <section className="tasks-list">
-      <gcds-heading tag="h2" id="tasks-heading">
+      <scds-heading tag="h2" id="tasks-heading">
         My Tasks
-      </gcds-heading>
+      </scds-heading>
       {tasks ? (
         tasks.status === 'ok' ? (
           <div ref={containerRef} />

@@ -4,6 +4,40 @@ import { clearSession, createMockSession, storeSession } from '@tn4consulting/sh
 import { Overview } from './Overview';
 
 jest.mock('./register-scds', () => ({}));
+jest.mock('./asset-base-url', () => ({ assetBaseUrl: 'http://localhost:4201/' }));
+
+// Overview now renders DashboardFeaturePaymentHistory (the "Payments
+// Activity" widget) directly, alongside NeedsAttentionList, matching the
+// two-column layout in docs/msca-screenshots/dashboard.png -- same
+// runtime-config/content-client/fetch mocking PaymentHistory.spec.tsx and
+// App.spec.tsx already need for that widget.
+jest.mock('../runtime-config', () => ({
+  loadRuntimeConfig: jest.fn().mockResolvedValue({ dashboardBffBaseUrl: 'http://localhost:3004', strapiBaseUrl: undefined }),
+}));
+
+const getPageContentsMock = jest.fn().mockResolvedValue({
+  'dashboard.payment-history.heading': { title: 'Payments Activity', body: '' },
+  'dashboard.payment-history.table.program': { title: 'Program', body: '' },
+  'dashboard.payment-history.table.status': { title: 'Status', body: '' },
+  'dashboard.payment-history.table.date': { title: 'Date', body: '' },
+  'dashboard.payment-history.table.amount': { title: 'Amount', body: '' },
+  'dashboard.payment-history.status.complete': { title: 'Complete', body: '' },
+  'dashboard.payment-history.status.pending': { title: 'Pending', body: '' },
+  'dashboard.payment-history.error': { title: 'Payment history is temporarily unavailable.', body: '' },
+});
+jest.mock('./content-client', () => ({
+  PAYMENT_HISTORY_CONTENT_KEYS: [
+    'dashboard.payment-history.heading',
+    'dashboard.payment-history.table.program',
+    'dashboard.payment-history.table.status',
+    'dashboard.payment-history.table.date',
+    'dashboard.payment-history.table.amount',
+    'dashboard.payment-history.status.complete',
+    'dashboard.payment-history.status.pending',
+    'dashboard.payment-history.error',
+  ],
+  createContentClient: () => ({ getPageContents: getPageContentsMock }),
+}));
 
 const useJobApplicationsWidgetLoaderMock = jest.fn();
 const useEiReportingStatusWidgetLoaderMock = jest.fn();
@@ -20,9 +54,13 @@ describe('Overview', () => {
   beforeEach(() => {
     useJobApplicationsWidgetLoaderMock.mockReset().mockReturnValue(undefined);
     useEiReportingStatusWidgetLoaderMock.mockReset().mockReturnValue(undefined);
+    global.fetch = jest.fn().mockResolvedValue({ ok: true, json: () => Promise.resolve([]) }) as unknown as typeof fetch;
   });
 
-  afterEach(() => clearSession());
+  afterEach(() => {
+    clearSession();
+    jest.restoreAllMocks();
+  });
 
   it('greets the signed-in citizen by name', () => {
     storeSession(createMockSession());

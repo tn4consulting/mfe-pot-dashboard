@@ -68,7 +68,7 @@ describe('App', () => {
     storeSession(createMockSession());
     render(<App />);
 
-    // gcds-heading is an unregistered custom element in this test
+    // scds-heading is an unregistered custom element in this test
     // environment (register-scds is mocked out), so it carries no
     // implicit heading role -- match on its text content instead, same
     // pattern used for scds-card elsewhere in this family's specs.
@@ -99,6 +99,6 @@ describe('App', () => {
 
     const alert = await screen.findByRole('alert');
     expect(alert.textContent).toBe('auth.signInRequired');
-    expect(screen.queryByText('Payment history')).not.toBeInTheDocument();
+    expect(screen.queryByText('Payments Activity')).not.toBeInTheDocument();
   });
 });

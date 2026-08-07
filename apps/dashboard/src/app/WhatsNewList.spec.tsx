@@ -6,7 +6,7 @@ describe('WhatsNewList', () => {
   it('renders the English copy by default', () => {
     render(<WhatsNewList locale="en" />);
 
-    // gcds-notice is an unregistered custom element in this test
+    // scds-notice is an unregistered custom element in this test
     // environment -- its `notice-title` prop lands as a plain attribute
     // (no shadow DOM to render it as visible text), so title is asserted
     // via the attribute and body via its slotted (visible) text content.
@@ -14,6 +14,7 @@ describe('WhatsNewList', () => {
       'Your weekly EI benefit amount has been recalculated based on your latest report.',
     );
     expect(notice.getAttribute('notice-title')).toBe('Employment Insurance — benefit increase');
+    expect(notice.getAttribute('tone')).toBe('info');
   });
 
   it('renders the French copy when locale is fr', () => {

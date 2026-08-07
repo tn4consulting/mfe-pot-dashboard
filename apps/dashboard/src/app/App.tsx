@@ -12,7 +12,6 @@ import { createContentClient, OVERVIEW_CONTENT_KEY } from './content-client';
 import { loadRuntimeConfig } from '../runtime-config';
 import { assetBaseUrl } from './asset-base-url';
 import { Overview } from './Overview';
-import { DashboardFeaturePaymentHistory } from './PaymentHistory';
 import './register-scds';
 
 interface RemoteConfig {
@@ -132,8 +131,6 @@ export function App() {
       </section>
 
       <Overview benefitOverview={benefitOverview} />
-
-      <DashboardFeaturePaymentHistory />
     </>
   );
 }

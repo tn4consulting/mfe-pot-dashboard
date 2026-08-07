@@ -1,13 +1,13 @@
 import type { DetailedHTMLProps, HTMLAttributes } from 'react';
 
 /**
- * Minimal JSX typing for the SCDS custom element this app renders
- * directly (no Angular wrapper -- see mfe-pot-platform's CLAUDE.md/
- * migration plan). Confirmed by inspecting `@tn4consulting/shared-ui-scds-core`'s
+ * Minimal JSX typing for the SCDS custom elements this app renders
+ * directly. Confirmed by inspecting `@tn4consulting/shared-ui-scds-core`'s
  * own compiled Stencil metadata directly: every prop used below has a
  * real kebab-case `attribute` mapping the component's own
  * `attributeChangedCallback` watches, so a plain HTML attribute in JSX is
- * enough -- same pattern already proven for GCDS in the shell repo.
+ * enough. GCDS has been removed from the family entirely -- this file
+ * replaces both the old scds-elements.d.ts and gcds-elements.d.ts.
  *
  * `scds-multi-column-list` is deliberately NOT declared here -- its
  * `items`/`columns` props are non-primitive, so TasksList.tsx creates and
@@ -28,9 +28,26 @@ declare global {
         target?: string;
         'img-src'?: string;
         'img-alt'?: string;
-        tone?: 'info' | 'success' | 'warning' | 'danger';
+        tone?: 'info' | 'success' | 'warning' | 'danger' | 'neutral';
         'tone-label'?: string;
       };
+      'scds-heading': ScdsElementProps & { tag?: string };
+      'scds-text': ScdsElementProps & { tag?: string; size?: string };
+      'scds-notice': ScdsElementProps & {
+        'notice-title'?: string;
+        'title-tag'?: 'h2' | 'h3' | 'h4';
+        tone?: 'info' | 'success' | 'warning' | 'danger';
+      };
+      'scds-badge': ScdsElementProps & {
+        tone?: 'info' | 'success' | 'warning' | 'danger' | 'neutral';
+        label?: string;
+        variant?: 'subtle' | 'pill';
+        'show-icon'?: boolean | string;
+      };
+      'scds-link': ScdsElementProps & { href?: string; 'icon-name'?: string; 'icon-position'?: 'start' | 'end' };
+      'scds-table': ScdsElementProps & { dense?: boolean };
+      'scds-breadcrumbs': ScdsElementProps;
+      'scds-breadcrumbs-item': ScdsElementProps & { href?: string };
     }
   }
 }

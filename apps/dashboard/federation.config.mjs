@@ -1,16 +1,43 @@
-import { withNativeFederation } from '@softarc/native-federation/config';
+import { share, withNativeFederation } from '@softarc/native-federation/config';
 import {
   sharedFederationRuntimeDependency,
   sharedReactFederationDependencies,
+  sharedUiScdsCoreFederationDependency,
 } from '@tn4consulting/shared-federation-config/react';
 
-// React remote -- imports the framework-agnostic core's config API, not
-// the Angular wrapper's re-export. Shares react/react-dom (both exposed
+// TEMP LOCAL ADDITION (not yet in the published shared-federation-config):
+// register-scds.ts imports `defineCustomElements` from the Stencil-generated
+// '@tn4consulting/shared-ui-scds-core/loader' subpath, not just the bare
+// package -- but sharedUiScdsCoreFederationDependency's
+// `includeSecondaries: false` (deliberately set to dodge the same
+// jsx-runtime-style auto-discovery bug documented in
+// shared-federation-config/react.js) means only the bare specifier is in
+// the shared import map, so this subpath was never resolvable ("Unable to
+// resolve specifier '@tn4consulting/shared-ui-scds-core/loader'") --
+// confirmed live: dashboard's federated `./Component` failed to load
+// entirely (RemoteErrorBoundary fallback) until this was added. Same fix
+// as job-bank's federation.config.mjs, until this can be folded into the
+// published package properly.
+const sharedUiScdsCoreLoader = share({
+  '@tn4consulting/shared-ui-scds-core/loader': {
+    singleton: true,
+    strictVersion: true,
+    requiredVersion: 'auto',
+    includeSecondaries: false,
+  },
+});
+
+// React remote -- imports the framework-agnostic config API, not the
+// Angular wrapper's re-export. Shares react/react-dom (both exposed
 // entries mount directly inside a host's own React tree) plus
 // shared-federation-runtime (`./Component` needs it for the job-bank/EI
 // widget-loader Contexts Overview.tsx consumes -- sharing it for the
 // whole app is harmless and simpler than splitting shared config per
-// expose).
+// expose) plus shared-ui-scds-core (this app renders scds-card/
+// scds-heading/scds-notice/scds-badge/etc. directly -- GCDS has been
+// removed from the family entirely, closing a real pre-existing gap: this
+// app never shared either design-system singleton despite rendering one
+// directly).
 //
 // Only `./Component` and `./PaymentHistoryWidget` are exposed now -- no
 // `./RemoteProviders`. That export existed only to carry Angular DI
@@ -29,5 +56,7 @@ export default withNativeFederation({
   shared: {
     ...sharedReactFederationDependencies,
     ...sharedFederationRuntimeDependency,
+    ...sharedUiScdsCoreFederationDependency,
+    ...sharedUiScdsCoreLoader,
   },
 });

@@ -3,7 +3,7 @@
     "title": "Welcome to your account",
     "body": "Here is an overview of your benefits, payments, and tasks."
   },
-  "dashboard.payment-history.heading": { "title": "Payment history", "body": "" },
+  "dashboard.payment-history.heading": { "title": "Payments Activity", "body": "" },
   "dashboard.payment-history.table.program": { "title": "Program", "body": "" },
   "dashboard.payment-history.table.status": { "title": "Status", "body": "" },
   "dashboard.payment-history.table.date": { "title": "Date", "body": "" },
