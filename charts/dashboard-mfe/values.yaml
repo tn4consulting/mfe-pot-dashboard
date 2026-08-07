@@ -1,8 +1,8 @@
 frontend:
-  name: dashboard
+  name: dashboard-mfe
   replicaCount: 1
   image:
-    repository: mfe-pot-dashboard
+    repository: mfe-pot-dashboard-mfe
     tag: latest
     pullPolicy: IfNotPresent
   containerPort: 80

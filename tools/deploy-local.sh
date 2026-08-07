@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Builds dashboard's + dashboard-bff's images, spins up (or
+# Builds dashboard-mfe's + dashboard-bff's images, spins up (or
 # reuses) a local kind cluster with ingress-nginx, and helm-upgrades this
 # app's chart onto it -- the local equivalent of the kind-validation stage
 # in .github/workflows/ci.yml.
@@ -42,11 +42,11 @@ fi
 
 export DOCKER_BUILDKIT=1
 
-echo "==> Building dashboard image..."
+echo "==> Building dashboard-mfe image..."
 docker build \
   --secret id=npm_token,src="$token_file" \
-  -t mfe-pot-dashboard:kind \
-  -f apps/dashboard/Dockerfile .
+  -t mfe-pot-dashboard-mfe:kind \
+  -f apps/dashboard-mfe/Dockerfile .
 
 echo "==> Building dashboard-bff image..."
 docker build \
@@ -55,16 +55,16 @@ docker build \
   -f apps/dashboard-bff/Dockerfile .
 
 echo "==> Loading images into kind..."
-kind load docker-image mfe-pot-dashboard:kind --name "$CLUSTER_NAME"
+kind load docker-image mfe-pot-dashboard-mfe:kind --name "$CLUSTER_NAME"
 kind load docker-image mfe-pot-dashboard-bff:kind --name "$CLUSTER_NAME"
 
 echo "==> Updating Helm chart dependencies..."
-helm dependency update charts/dashboard
+helm dependency update charts/dashboard-mfe
 
-echo "==> Deploying dashboard..."
-helm upgrade --install dashboard charts/dashboard \
-  -f charts/dashboard/values.yaml \
-  -f charts/dashboard/values-kind.yaml \
+echo "==> Deploying dashboard-mfe..."
+helm upgrade --install dashboard-mfe charts/dashboard-mfe \
+  -f charts/dashboard-mfe/values.yaml \
+  -f charts/dashboard-mfe/values-kind.yaml \
   --wait --timeout 120s
 
 # values-kind.yaml pins static image tags with pullPolicy: Never, so
@@ -74,8 +74,8 @@ helm upgrade --install dashboard charts/dashboard \
 # content indefinitely (confirmed the hard way: a redeploy silently kept
 # serving a pre-fix build). Force both deployments explicitly every run.
 echo "==> Restarting deployments to pick up the freshly built images..."
-kubectl rollout restart deployment/dashboard deployment/dashboard-bff
-kubectl rollout status deployment/dashboard --timeout=60s
+kubectl rollout restart deployment/dashboard-mfe deployment/dashboard-bff
+kubectl rollout status deployment/dashboard-mfe --timeout=60s
 kubectl rollout status deployment/dashboard-bff --timeout=60s
 
 echo "==> Waiting for ingress..."
@@ -86,9 +86,9 @@ for i in $(seq 1 30); do
   sleep 2
 done
 if [ "$status" != "200" ]; then
-  echo "warning: dashboard isn't answering with 200 yet (last status: $status). Check with:" >&2
+  echo "warning: dashboard-mfe isn't answering with 200 yet (last status: $status). Check with:" >&2
   echo "  kubectl get pods,ingress" >&2
   exit 1
 fi
 
-echo "==> dashboard is up: curl -H \"Host: $HOSTNAME\" http://localhost/"
+echo "==> dashboard-mfe is up: curl -H \"Host: $HOSTNAME\" http://localhost/"

@@ -5,7 +5,7 @@
 # pullPolicy: Never skips any registry round-trip entirely.
 frontend:
   image:
-    repository: mfe-pot-dashboard
+    repository: mfe-pot-dashboard-mfe
     tag: kind
     pullPolicy: Never
 

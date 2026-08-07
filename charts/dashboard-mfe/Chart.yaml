@@ -1,9 +1,9 @@
 apiVersion: v2
-name: dashboard
+name: dashboard-mfe
 description: >-
-  Deploys the dashboard frontend + dashboard-bff pair as one
+  Deploys the dashboard-mfe frontend + dashboard-bff pair as one
   Helm release, independent of every other mfe-pot app -- `helm upgrade
-  --install dashboard ./charts/dashboard` touches only these two.
+  --install dashboard-mfe ./charts/dashboard-mfe` touches only these two.
   Extracted into this repo per Phase 1 of the platform repo's
   docs/plans/20260801-1935-mfe-pot-polyrepo-split-and-k8s-hosting.md,
   following the job-bank chart as its template; its library-chart

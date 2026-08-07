@@ -15,7 +15,7 @@
 import './styles.css';
 import { initFederation } from '@softarc/native-federation-orchestrator';
 
-initFederation({ dashboard: './remoteEntry.json' })
+initFederation({ 'dashboard-mfe': './remoteEntry.json' })
   .catch((err) => console.error(err))
   .then(() => import('./bootstrap'))
   .catch((err) => console.error(err));

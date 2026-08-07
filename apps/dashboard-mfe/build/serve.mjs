@@ -10,19 +10,19 @@ import { createRequire } from 'node:module';
 import { extname, join } from 'node:path';
 
 const require = createRequire(import.meta.url);
-const outputPath = 'dist/apps/dashboard/browser';
-const port = Number(process.env.DASHBOARD_DEV_PORT ?? 4201);
+const outputPath = 'dist/apps/dashboard-mfe/browser';
+const port = Number(process.env.DASHBOARD_MFE_DEV_PORT ?? 4201);
 
 await rm(outputPath, { recursive: true, force: true });
 await mkdir(outputPath, { recursive: true });
-await cp('apps/dashboard/public', outputPath, { recursive: true });
-await cp('apps/dashboard/src/index.html', join(outputPath, 'index.html'));
+await cp('apps/dashboard-mfe/public', outputPath, { recursive: true });
+await cp('apps/dashboard-mfe/src/index.html', join(outputPath, 'index.html'));
 await cp(require.resolve('es-module-shims'), join(outputPath, 'es-module-shims.js'));
 
-await runEsBuildBuilder('apps/dashboard/federation.config.mjs', {
+await runEsBuildBuilder('apps/dashboard-mfe/federation.config.mjs', {
   workspaceRoot: process.cwd(),
   outputPath,
-  tsConfig: 'apps/dashboard/tsconfig.federation.json',
+  tsConfig: 'apps/dashboard-mfe/tsconfig.federation.json',
   packageJson: 'package.json',
   dev: true,
   watch: true,
@@ -33,7 +33,7 @@ await runEsBuildBuilder('apps/dashboard/federation.config.mjs', {
 });
 
 const mainCtx = await esbuild.context({
-  entryPoints: ['apps/dashboard/src/main.tsx'],
+  entryPoints: ['apps/dashboard-mfe/src/main.tsx'],
   outfile: join(outputPath, 'main.js'),
   bundle: true,
   format: 'esm',
@@ -73,5 +73,5 @@ createServer(async (req, res) => {
     res.end('Not found');
   }
 }).listen(port, () => {
-  console.log(`dashboard dev server listening on http://localhost:${port}`);
+  console.log(`dashboard-mfe dev server listening on http://localhost:${port}`);
 });

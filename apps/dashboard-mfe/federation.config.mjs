@@ -46,11 +46,11 @@ const sharedUiScdsCoreLoader = share({
 // host to populate -- both exposed components do all of their own setup
 // on mount instead (see App.tsx and PaymentHistory.tsx).
 export default withNativeFederation({
-  name: 'dashboard',
+  name: 'dashboard-mfe',
 
   exposes: {
-    './Component': './apps/dashboard/src/app/App.tsx',
-    './PaymentHistoryWidget': './apps/dashboard/src/app/PaymentHistory.tsx',
+    './Component': './apps/dashboard-mfe/src/app/App.tsx',
+    './PaymentHistoryWidget': './apps/dashboard-mfe/src/app/PaymentHistory.tsx',
   },
 
   shared: {

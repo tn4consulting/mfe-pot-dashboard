@@ -1,4 +1,4 @@
-# mfe-pot-dashboard
+# mfe-pot-dashboard-mfe
 
 > **Disclaimer:** This is an independent proof-of-technology project, not
 > affiliated with, endorsed by, or associated with Service Canada,
@@ -9,11 +9,11 @@
 The **MSCA-D** frontend for the mfe-pot Government of Canada MFE
 proof-of-technology: cross-benefit overview, payment history, correspondence,
 and "tell us once" profile maintenance. Federated as a remote into
-`mfe-pot-shell`; also exposes a standalone payment-history widget embedded
-into `mfe-pot-employment-life-events`.
+`mfe-pot-msca-shell`; also exposes a standalone payment-history widget
+embedded into `mfe-pot-employment-life-events`.
 
 This README covers running **this app (+ its BFF) standalone**. For the full
-family (all 6 repos together) and architecture rationale, see
+family (all 7 repos together) and architecture rationale, see
 [`../mfe-pot-platform/README.md`](../mfe-pot-platform/README.md) and
 [`CLAUDE.md`](./CLAUDE.md) in this repo.
 
@@ -35,7 +35,7 @@ family (all 6 repos together) and architecture rationale, see
 export NODE_AUTH_TOKEN=<your GitHub token>
 pnpm install
 pnpm exec nx serve dashboard-bff   # terminal 1 — port 3004
-pnpm exec nx serve dashboard       # terminal 2 — port 4201
+pnpm exec nx serve dashboard-mfe   # terminal 2 — port 4201
 ```
 
 Open `http://localhost:4201`. `dashboard-bff` fans out to `job-bank-bff` and
@@ -48,11 +48,11 @@ platform repo's README for the full cross-benefit picture.
 ## Test, lint, build
 
 ```bash
-pnpm exec nx test dashboard
+pnpm exec nx test dashboard-mfe
 pnpm exec nx test dashboard-bff
-pnpm exec nx lint dashboard
+pnpm exec nx lint dashboard-mfe
 pnpm exec nx run dashboard-bff:eslint:lint   # BFF's lint target isn't named "lint"
-pnpm exec nx build dashboard --configuration=production
+pnpm exec nx build dashboard-mfe --configuration=production
 pnpm exec nx build dashboard-bff
 ```
 
@@ -63,11 +63,11 @@ Or across this repo's projects at once: `pnpm run test` / `pnpm run lint` /
 
 ```bash
 docker build --secret id=npm_token,src=<(printf '%s' "$NODE_AUTH_TOKEN") \
-  -t mfe-pot-dashboard:local -f apps/dashboard/Dockerfile .
+  -t mfe-pot-dashboard-mfe:local -f apps/dashboard-mfe/Dockerfile .
 docker build --secret id=npm_token,src=<(printf '%s' "$NODE_AUTH_TOKEN") \
   -t mfe-pot-dashboard-bff:local -f apps/dashboard-bff/Dockerfile .
 
-docker run -p 8080:80 mfe-pot-dashboard:local
+docker run -p 8080:80 mfe-pot-dashboard-mfe:local
 docker run -p 3004:3004 -e HOST=0.0.0.0 mfe-pot-dashboard-bff:local
 ```
 
@@ -79,9 +79,9 @@ pnpm deploy:local
 
 Runs `tools/deploy-local.sh`: builds both images, creates/reuses a local
 `kind` cluster (shared with the other app repos, named `kind`), and
-`helm upgrade --install`s `charts/dashboard` (one Helm release for both the
-frontend and `dashboard-bff`). Requires `../mfe-pot-platform` checked out as
-a sibling (this chart's library-chart dependencies resolve via
+`helm upgrade --install`s `charts/dashboard-mfe` (one Helm release for both
+the frontend and `dashboard-bff`). Requires `../mfe-pot-platform` checked
+out as a sibling (this chart's library-chart dependencies resolve via
 `file://../../../mfe-pot-platform/charts/...` relative paths). Add to
 `/etc/hosts`:
 
@@ -92,8 +92,8 @@ a sibling (this chart's library-chart dependencies resolve via
 Then `curl -H "Host: dashboard-mfe.mfe-pot.local" http://localhost/` or browse
 there directly. In a pure single-app `kind` deploy, `dashboard-bff`'s
 overview tiles that depend on the other services will show `unavailable` —
-deploy `mfe-pot-job-bank`/`mfe-pot-employment-insurance` into the same
-cluster too for the full picture (see the platform repo's README).
+deploy `mfe-pot-job-bank-mfe`/`mfe-pot-employment-insurance-mfe` into the
+same cluster too for the full picture (see the platform repo's README).
 
 ## Where to go next
 
@@ -103,4 +103,4 @@ cluster too for the full picture (see the platform repo's README).
 - [`../mfe-pot-platform/CLAUDE.md`](../mfe-pot-platform/CLAUDE.md) — the
   full architecture reference for the whole family.
 - [`../mfe-pot-platform/README.md`](../mfe-pot-platform/README.md) —
-  running all 6 repos together.
+  running all 7 repos together.

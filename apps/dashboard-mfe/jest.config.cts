@@ -1,9 +1,9 @@
 module.exports = {
-  displayName: 'dashboard',
+  displayName: 'dashboard-mfe',
   preset: '../../jest.preset.js',
   testEnvironment: 'jsdom',
   setupFilesAfterEnv: ['<rootDir>/src/test-setup.ts'],
-  coverageDirectory: '../../coverage/apps/dashboard',
+  coverageDirectory: '../../coverage/apps/dashboard-mfe',
   transform: {
     '^.+\\.(ts|tsx)$': [
       'ts-jest',

@@ -71,9 +71,9 @@ jobs:
       - name: Checkout this repo
         uses: actions/checkout@v4
         with:
-          path: mfe-pot-dashboard
+          path: mfe-pot-dashboard-mfe
 
-      # charts/dashboard/Chart.yaml's library-chart dependencies resolve
+      # charts/dashboard-mfe/Chart.yaml's library-chart dependencies resolve
       # via a sibling-checkout-relative file:// path (see CLAUDE.md) --
       # checked out alongside this repo so the same relative layout local
       # dev uses (both under one parent directory) holds here too. Public
@@ -86,12 +86,12 @@ jobs:
 
       - uses: docker/setup-buildx-action@v3
 
-      - name: Build dashboard image
+      - name: Build dashboard-mfe image
         uses: docker/build-push-action@v6
         with:
-          context: mfe-pot-dashboard
-          file: mfe-pot-dashboard/apps/dashboard/Dockerfile
-          tags: mfe-pot-dashboard:kind
+          context: mfe-pot-dashboard-mfe
+          file: mfe-pot-dashboard-mfe/apps/dashboard-mfe/Dockerfile
+          tags: mfe-pot-dashboard-mfe:kind
           load: true
           secrets: |
             npm_token=${{ secrets.GITHUB_TOKEN }}
@@ -99,8 +99,8 @@ jobs:
       - name: Build dashboard-bff image
         uses: docker/build-push-action@v6
         with:
-          context: mfe-pot-dashboard
-          file: mfe-pot-dashboard/apps/dashboard-bff/Dockerfile
+          context: mfe-pot-dashboard-mfe
+          file: mfe-pot-dashboard-mfe/apps/dashboard-bff/Dockerfile
           tags: mfe-pot-dashboard-bff:kind
           load: true
           secrets: |
@@ -129,19 +129,19 @@ jobs:
 
       - name: Load images into kind
         run: |
-          kind load docker-image mfe-pot-dashboard:kind
+          kind load docker-image mfe-pot-dashboard-mfe:kind
           kind load docker-image mfe-pot-dashboard-bff:kind
 
       - uses: azure/setup-helm@v4
 
       - name: helm dependency update
-        run: helm dependency update mfe-pot-dashboard/charts/dashboard
+        run: helm dependency update mfe-pot-dashboard-mfe/charts/dashboard-mfe
 
-      - name: helm install dashboard
+      - name: helm install dashboard-mfe
         run: |
-          helm install dashboard mfe-pot-dashboard/charts/dashboard \
-            -f mfe-pot-dashboard/charts/dashboard/values.yaml \
-            -f mfe-pot-dashboard/charts/dashboard/values-kind.yaml \
+          helm install dashboard-mfe mfe-pot-dashboard-mfe/charts/dashboard-mfe \
+            -f mfe-pot-dashboard-mfe/charts/dashboard-mfe/values.yaml \
+            -f mfe-pot-dashboard-mfe/charts/dashboard-mfe/values-kind.yaml \
             --wait --timeout 120s
 
       # Same checks proven manually (see CLAUDE.md/the platform repo's
