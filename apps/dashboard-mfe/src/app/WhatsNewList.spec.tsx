@@ -11,9 +11,9 @@ describe('WhatsNewList', () => {
     // (no shadow DOM to render it as visible text), so title is asserted
     // via the attribute and body via its slotted (visible) text content.
     const notice = screen.getByText(
-      'Your weekly EI benefit amount has been recalculated based on your latest report.',
+      'This is a test message from Employment and Social Development Canada (ESDC). No action is required.',
     );
-    expect(notice.getAttribute('notice-title')).toBe('Employment Insurance — benefit increase');
+    expect(notice.getAttribute('notice-title')).toBe('ESDC test message');
     expect(notice.getAttribute('tone')).toBe('info');
   });
 
@@ -21,8 +21,8 @@ describe('WhatsNewList', () => {
     render(<WhatsNewList locale="fr" />);
 
     const notice = screen.getByText(
-      'Le montant de votre prestation hebdomadaire d’assurance-emploi a été recalculé selon votre dernier rapport.',
+      "Ceci est un message de test d'Emploi et Développement social Canada (EDSC). Aucune mesure n'est requise.",
     );
-    expect(notice.getAttribute('notice-title')).toBe('Assurance-emploi — augmentation de la prestation');
+    expect(notice.getAttribute('notice-title')).toBe('Message de test d’EDSC');
   });
 });

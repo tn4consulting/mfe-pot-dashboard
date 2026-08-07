@@ -13,9 +13,12 @@ export const PAYMENT_HISTORY_CONTENT_KEYS = [
   'dashboard.payment-history.table.status',
   'dashboard.payment-history.table.date',
   'dashboard.payment-history.table.amount',
+  'dashboard.payment-history.table.actions',
+  'dashboard.payment-history.table.actions-label',
   'dashboard.payment-history.status.complete',
   'dashboard.payment-history.status.pending',
   'dashboard.payment-history.error',
+  'dashboard.payment-history.view-all',
 ] as const;
 
 /**

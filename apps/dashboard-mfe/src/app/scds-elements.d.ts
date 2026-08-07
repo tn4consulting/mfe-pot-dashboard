@@ -9,10 +9,10 @@ import type { DetailedHTMLProps, HTMLAttributes } from 'react';
  * enough. GCDS has been removed from the family entirely -- this file
  * replaces both the old scds-elements.d.ts and gcds-elements.d.ts.
  *
- * `scds-multi-column-list` is deliberately NOT declared here -- its
- * `items`/`columns` props are non-primitive, so TasksList.tsx creates and
- * mounts it imperatively instead (same pattern as job-bank's
- * FeatureSearch.tsx).
+ * `scds-multi-column-list` isn't declared here -- this app doesn't render
+ * it directly (its `items`/`columns` props are non-primitive anyway, so a
+ * consumer would create and mount it imperatively, same pattern as
+ * job-bank's FeatureSearch.tsx).
  */
 type ScdsElementProps = DetailedHTMLProps<HTMLAttributes<HTMLElement>, HTMLElement>;
 

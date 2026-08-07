@@ -20,16 +20,14 @@ jest.mock('./content-client', () => ({
     'dashboard.payment-history.table.status',
     'dashboard.payment-history.table.date',
     'dashboard.payment-history.table.amount',
+    'dashboard.payment-history.table.actions',
+    'dashboard.payment-history.table.actions-label',
     'dashboard.payment-history.status.complete',
     'dashboard.payment-history.status.pending',
     'dashboard.payment-history.error',
+    'dashboard.payment-history.view-all',
   ],
   createContentClient: () => ({ getPageContent: getPageContentMock, getPageContents: getPageContentsMock }),
-}));
-
-jest.mock('@tn4consulting/shared-federation-runtime', () => ({
-  useJobApplicationsWidgetLoader: () => undefined,
-  useEiReportingStatusWidgetLoader: () => undefined,
 }));
 
 describe('App', () => {
@@ -41,9 +39,12 @@ describe('App', () => {
       'dashboard.payment-history.table.status': { title: 'Status', body: '' },
       'dashboard.payment-history.table.date': { title: 'Date', body: '' },
       'dashboard.payment-history.table.amount': { title: 'Amount', body: '' },
+      'dashboard.payment-history.table.actions': { title: 'Actions', body: '' },
+      'dashboard.payment-history.table.actions-label': { title: 'Actions', body: '' },
       'dashboard.payment-history.status.complete': { title: 'Complete', body: '' },
       'dashboard.payment-history.status.pending': { title: 'Pending', body: '' },
       'dashboard.payment-history.error': { title: 'Payment history is temporarily unavailable.', body: '' },
+      'dashboard.payment-history.view-all': { title: 'View payment history', body: '' },
     });
     global.fetch = jest.fn((url: RequestInfo | URL) => {
       if (url.toString().includes('/api/payments')) {

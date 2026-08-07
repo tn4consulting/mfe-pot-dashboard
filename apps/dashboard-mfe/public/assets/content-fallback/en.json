@@ -1,14 +1,17 @@
 {
   "dashboard.overview.intro": {
     "title": "Welcome to your account",
-    "body": "Here is an overview of your benefits, payments, and tasks."
+    "body": "Here is an overview of your benefits and payments."
   },
   "dashboard.payment-history.heading": { "title": "Payments Activity", "body": "" },
   "dashboard.payment-history.table.program": { "title": "Program", "body": "" },
   "dashboard.payment-history.table.status": { "title": "Status", "body": "" },
   "dashboard.payment-history.table.date": { "title": "Date", "body": "" },
   "dashboard.payment-history.table.amount": { "title": "Amount", "body": "" },
+  "dashboard.payment-history.table.actions": { "title": "Actions", "body": "" },
+  "dashboard.payment-history.table.actions-label": { "title": "Actions", "body": "" },
   "dashboard.payment-history.status.complete": { "title": "Complete", "body": "" },
   "dashboard.payment-history.status.pending": { "title": "Pending", "body": "" },
-  "dashboard.payment-history.error": { "title": "Payment history is temporarily unavailable.", "body": "" }
+  "dashboard.payment-history.error": { "title": "Payment history is temporarily unavailable.", "body": "" },
+  "dashboard.payment-history.view-all": { "title": "View payment history", "body": "" }
 }

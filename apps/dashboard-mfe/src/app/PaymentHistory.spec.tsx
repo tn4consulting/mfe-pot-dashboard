@@ -17,9 +17,12 @@ const FALLBACK_EN = {
   'dashboard.payment-history.table.status': { title: 'Status', body: '' },
   'dashboard.payment-history.table.date': { title: 'Date', body: '' },
   'dashboard.payment-history.table.amount': { title: 'Amount', body: '' },
+  'dashboard.payment-history.table.actions': { title: 'Actions', body: '' },
+  'dashboard.payment-history.table.actions-label': { title: 'Actions', body: '' },
   'dashboard.payment-history.status.complete': { title: 'Complete', body: '' },
   'dashboard.payment-history.status.pending': { title: 'Pending', body: '' },
   'dashboard.payment-history.error': { title: 'Payment history is temporarily unavailable.', body: '' },
+  'dashboard.payment-history.view-all': { title: 'View payment history', body: '' },
 };
 
 function mockFetch(paymentsResponse: () => Promise<Response>) {
@@ -60,6 +63,11 @@ describe('DashboardFeaturePaymentHistory', () => {
     expect(badge?.getAttribute('label')).toBe('Complete');
     expect(badge?.getAttribute('tone')).toBe('success');
     expect(screen.getByText('$638.00')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Actions — EI' })).toBeInTheDocument();
+    // scds-link is an unregistered custom element in this test
+    // environment -- same reasoning as scds-badge above, its slotted text
+    // is still real visible content though.
+    expect(screen.getByText('View payment history')).toBeInTheDocument();
   });
 
   it('shows an alert when there is no active session', async () => {

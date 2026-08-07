@@ -11,6 +11,22 @@ import { createContentClient, PAYMENT_HISTORY_CONTENT_KEYS } from './content-cli
 import { loadRuntimeConfig } from '../runtime-config';
 import { assetBaseUrl } from './asset-base-url';
 
+// Inline style, not a stylesheet class -- `.scds-visually-hidden` (defined
+// globally in shared-ui-scds-core's tokens.css) never loads when this
+// widget is federated, same reasoning as every other inline style in this
+// file/Overview.tsx.
+const VISUALLY_HIDDEN_STYLE: React.CSSProperties = {
+  position: 'absolute',
+  width: '1px',
+  height: '1px',
+  padding: 0,
+  margin: '-1px',
+  overflow: 'hidden',
+  clip: 'rect(0, 0, 0, 0)',
+  whiteSpace: 'nowrap',
+  border: 0,
+};
+
 /**
  * Exposed as `./PaymentHistoryWidget` for employment-life-events to embed,
  * and also rendered inline on dashboard's own overview -- either way it's
@@ -97,65 +113,92 @@ export function DashboardFeaturePaymentHistory() {
   }, [apiClient]);
 
   return (
-    <section className="payment-history-widget">
+    // Inline styles, not a stylesheet class -- same federation-survival
+    // reasoning as Overview.tsx's own comment: this widget renders both
+    // standalone (dashboard's own overview) and embedded remotely
+    // (employment-life-events), and its own styles.css never loads in
+    // either federated case. The card look (white background, border,
+    // radius, persistent shadow) mirrors dashboard.png's "Payments
+    // Activity" card, and matches scds-card's own visual treatment
+    // (see shared-ui-scds-core's scds-card.css) without actually using
+    // scds-card, since this widget needs its own heading + table + link
+    // layout, not scds-card's title/badge/actions-slot shape.
+    <section
+      className="payment-history-widget"
+      style={{
+        background: 'var(--scds-color-white)',
+        border: '1px solid var(--scds-border-color)',
+        borderRadius: 'var(--scds-radius-md)',
+        boxShadow: 'var(--scds-shadow-sm)',
+        padding: 'var(--scds-space-5)',
+        boxSizing: 'border-box',
+      }}
+    >
       <scds-heading tag="h2">{label('dashboard.payment-history.heading')}</scds-heading>
       {loadError ? (
         <p role="alert">{label('dashboard.payment-history.error')}</p>
       ) : (
-        <scds-table>
-          <table>
-            {/* Inline style, not a stylesheet class -- `.visually-hidden`
-                was never actually defined in any loaded stylesheet (this
-                app's own styles.css doesn't load at all when federated
-                into the shell -- see Overview.tsx's identical note), so
-                this caption rendered fully visible, not screen-reader-only,
-                a pre-existing bug predating this component's SCDS rewrite. */}
-            <caption
-              style={{
-                position: 'absolute',
-                width: '1px',
-                height: '1px',
-                padding: 0,
-                margin: '-1px',
-                overflow: 'hidden',
-                clip: 'rect(0, 0, 0, 0)',
-                whiteSpace: 'nowrap',
-                border: 0,
-              }}
-            >
-              {label('dashboard.payment-history.heading')}
-            </caption>
-            <thead>
-              <tr>
-                <th scope="col">{label('dashboard.payment-history.table.program')}</th>
-                <th scope="col">{label('dashboard.payment-history.table.status')}</th>
-                <th scope="col">{label('dashboard.payment-history.table.date')}</th>
-                <th scope="col">{label('dashboard.payment-history.table.amount')}</th>
-              </tr>
-            </thead>
-            <tbody>
-              {payments.map((payment) => (
-                <tr key={payment.id}>
-                  <td>{payment.benefit}</td>
-                  <td>
-                    <scds-badge
-                      variant="pill"
-                      tone={payment.status === 'complete' ? 'success' : 'warning'}
-                      label={
-                        payment.status === 'complete'
-                          ? label('dashboard.payment-history.status.complete')
-                          : label('dashboard.payment-history.status.pending')
-                      }
-                      show-icon="false"
-                    ></scds-badge>
-                  </td>
-                  <td>{payment.date}</td>
-                  <td>${payment.amount.toFixed(2)}</td>
+        <>
+          <scds-table>
+            <table>
+              <caption style={VISUALLY_HIDDEN_STYLE}>{label('dashboard.payment-history.heading')}</caption>
+              <thead>
+                <tr>
+                  <th scope="col">{label('dashboard.payment-history.table.program')}</th>
+                  <th scope="col">{label('dashboard.payment-history.table.status')}</th>
+                  <th scope="col">{label('dashboard.payment-history.table.date')}</th>
+                  <th scope="col">{label('dashboard.payment-history.table.amount')}</th>
+                  <th scope="col">
+                    <span style={VISUALLY_HIDDEN_STYLE}>{label('dashboard.payment-history.table.actions')}</span>
+                  </th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </scds-table>
+              </thead>
+              <tbody>
+                {payments.map((payment) => (
+                  <tr key={payment.id}>
+                    <td>{payment.benefit}</td>
+                    <td>
+                      <scds-badge
+                        variant="pill"
+                        tone={payment.status === 'complete' ? 'success' : 'warning'}
+                        label={
+                          payment.status === 'complete'
+                            ? label('dashboard.payment-history.status.complete')
+                            : label('dashboard.payment-history.status.pending')
+                        }
+                        show-icon="false"
+                      ></scds-badge>
+                    </td>
+                    <td>{payment.date}</td>
+                    <td>${payment.amount.toFixed(2)}</td>
+                    <td>
+                      <button
+                        type="button"
+                        aria-label={`${label('dashboard.payment-history.table.actions-label')} — ${payment.benefit}`}
+                        style={{
+                          background: 'none',
+                          border: 'none',
+                          cursor: 'pointer',
+                          fontSize: 'var(--scds-font-size-lg)',
+                          lineHeight: 1,
+                          color: 'var(--scds-color-text-muted)',
+                          padding: 'var(--scds-space-1) var(--scds-space-2)',
+                        }}
+                      >
+                        ⋯
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </scds-table>
+          <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 'var(--scds-space-4)' }}>
+            <scds-link href="#" icon-name="arrow-right">
+              {label('dashboard.payment-history.view-all')}
+            </scds-link>
+          </div>
+        </>
       )}
     </section>
   );

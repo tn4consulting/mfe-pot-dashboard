@@ -19,14 +19,22 @@ interface WhatsNewItem {
  * Mock demo dressing modeled on `dashboard.png` -- deliberately not
  * sourced from dashboard-bff, there's no upstream owner for "what's new"
  * in this PoT, so it stays as static, bilingual, presentation-only data.
+ * Deliberately a generic ESDC test notice, not a real named benefit
+ * (contrast the reference screenshot's "Climate Action Incentive
+ * Payment" -- a real CRA benefit, not one this fictional ESDC scenario
+ * owns) -- see mfe-pot-platform/CLAUDE.md's "Design/UX fidelity" section
+ * on this family's citizen-facing content being clearly-marked test data.
  */
 const WHATS_NEW: WhatsNewItem[] = [
   {
-    id: 'whats-new-ei-increase',
-    title: { en: 'Employment Insurance — benefit increase', fr: 'Assurance-emploi — augmentation de la prestation' },
+    id: 'whats-new-esdc-test-message',
+    title: {
+      en: 'ESDC test message',
+      fr: 'Message de test d’EDSC',
+    },
     body: {
-      en: 'Your weekly EI benefit amount has been recalculated based on your latest report.',
-      fr: 'Le montant de votre prestation hebdomadaire d’assurance-emploi a été recalculé selon votre dernier rapport.',
+      en: 'This is a test message from Employment and Social Development Canada (ESDC). No action is required.',
+      fr: "Ceci est un message de test d'Emploi et Développement social Canada (EDSC). Aucune mesure n'est requise.",
     },
   },
 ];
