@@ -86,10 +86,10 @@ a sibling (this chart's library-chart dependencies resolve via
 `/etc/hosts`:
 
 ```
-127.0.0.1 dashboard.mfe-pot.local
+127.0.0.1 dashboard-mfe.mfe-pot.local
 ```
 
-Then `curl -H "Host: dashboard.mfe-pot.local" http://localhost/` or browse
+Then `curl -H "Host: dashboard-mfe.mfe-pot.local" http://localhost/` or browse
 there directly. In a pure single-app `kind` deploy, `dashboard-bff`'s
 overview tiles that depend on the other services will show `unavailable` —
 deploy `mfe-pot-job-bank`/`mfe-pot-employment-insurance` into the same

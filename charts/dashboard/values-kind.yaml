@@ -16,5 +16,5 @@ backend:
     pullPolicy: Never
 
 ingress:
-  host: dashboard.mfe-pot.local
+  host: dashboard-mfe.mfe-pot.local
   className: nginx
