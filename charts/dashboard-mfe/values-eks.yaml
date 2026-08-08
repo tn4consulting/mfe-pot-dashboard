@@ -1,0 +1,33 @@
+# Overrides layered on top of values.yaml for a real AWS EKS deployment (see
+# mfe-pot/docs/plans/20260808-1500-mfe-pot-aws-eks-terraform.md). See
+# mfe-pot-job-bank-mfe/charts/job-bank-mfe/values-eks.yaml for the fuller
+# explanatory comments this pattern was worked out against first.
+#
+# image.repository below assumes the AWS account/region used when
+# mfe-pot-platform/infra/terraform/foundation was applied -- update if
+# pointing at a different account (foundation's `ecr_repository_urls` output
+# has the authoritative values).
+#
+# image.tag is deliberately left at the values.yaml default -- the
+# deploy-eks CI job always overrides it via `--set ...image.tag=$GITHUB_SHA`.
+
+frontend:
+  image:
+    repository: 147318891438.dkr.ecr.ca-central-1.amazonaws.com/mfe-pot-dashboard-mfe
+    pullPolicy: IfNotPresent
+  runtimeConfig:
+    strapiBaseUrl: "https://cms.aws.tn4consulting.com"
+
+backend:
+  image:
+    repository: 147318891438.dkr.ecr.ca-central-1.amazonaws.com/mfe-pot-dashboard-bff
+    pullPolicy: IfNotPresent
+  # JOB_BANK_BFF_URL/EMPLOYMENT_INSURANCE_BFF_URL/REDIS_URL/MOCK_IDP_* stay
+  # unchanged from values.yaml -- real in-cluster Service DNS names,
+  # identical on EKS and kind.
+
+ingress:
+  host: dashboard-mfe.aws.tn4consulting.com
+  tls:
+    enabled: true
+    clusterIssuer: letsencrypt-staging
